@@ -1,4 +1,4 @@
-package com.munity.pickappbook.ui.theme
+package com.munity.pickappbook.core.ui.theme
 
 import android.app.Activity
 import android.os.Build

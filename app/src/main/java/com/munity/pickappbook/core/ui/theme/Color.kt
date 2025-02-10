@@ -1,4 +1,4 @@
-package com.munity.pickappbook.ui.theme
+package com.munity.pickappbook.core.ui.theme
 
 import androidx.compose.ui.graphics.Color
 
