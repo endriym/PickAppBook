@@ -22,18 +22,16 @@ import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
 import kotlinx.serialization.json.putJsonArray
 
-class ThePlaybookDataSource {
-    companion object {
-        private const val BASE_URL = ""
-        private const val CREATE_USER_ENDPOINT = "$BASE_URL/user"
-        private const val UPDATE_USER_ENDPOINT = "$BASE_URL/api/user"
-        private const val USER_IMAGE_ENDPOINT = "$BASE_URL/images/%s.jpeg"
-        private const val LOGIN_ENDPOINT = "$BASE_URL/login"
-        private const val REFRESH_ENDPOINT = "$BASE_URL/auth/refresh_token"
-        private const val TAGS_ENDPOINT = "$BASE_URL/api/tags"
-        private const val PICKUP_LINES_ENDPOINT = "$BASE_URL/api/pickup-lines"
-        private const val PICKUP_LINES_FEED_ENDPOINT = "$PICKUP_LINES_ENDPOINT/feed"
-    }
+object ThePlaybookDataSource {
+    private const val BASE_URL = ""
+    private const val CREATE_USER_ENDPOINT = "$BASE_URL/user"
+    private const val UPDATE_USER_ENDPOINT = "$BASE_URL/api/user"
+    private const val USER_IMAGE_ENDPOINT = "$BASE_URL/images/%s.jpeg"
+    private const val LOGIN_ENDPOINT = "$BASE_URL/login"
+    private const val REFRESH_ENDPOINT = "$BASE_URL/auth/refresh_token"
+    private const val TAGS_ENDPOINT = "$BASE_URL/api/tags"
+    private const val PICKUP_LINES_ENDPOINT = "$BASE_URL/api/pickup-lines"
+    private const val PICKUP_LINES_FEED_ENDPOINT = "$PICKUP_LINES_ENDPOINT/feed"
 
     private val httpClient = HttpClient(CIO) {
         install(ContentNegotiation) {
