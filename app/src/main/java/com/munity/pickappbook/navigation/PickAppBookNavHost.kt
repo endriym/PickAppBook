@@ -9,6 +9,7 @@ import androidx.navigation.compose.NavHost
 fun PickAppBookNavHost(
     navHostController: NavHostController,
     startDestination: String,
+    showSnackbar: suspend (String) -> Boolean,
     modifier: Modifier = Modifier
 ) {
     NavHost(
