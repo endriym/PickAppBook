@@ -12,6 +12,7 @@ import androidx.navigation.compose.rememberNavController
 import com.munity.pickappbook.core.ui.components.PickAppBottomAppBar
 import com.munity.pickappbook.core.ui.theme.PickAppBookTheme
 import com.munity.pickappbook.feature.home.navigation.HomeRoute
+import com.munity.pickappbook.feature.home.navigation.navigateToHome
 import com.munity.pickappbook.navigation.PickAppBookNavHost
 
 @Composable
@@ -23,7 +24,7 @@ fun PickAppBook() {
         Scaffold(
             bottomBar = {
                 PickAppBottomAppBar(
-                    onHomeButtonClick = {},
+                    onHomeButtonClick = { navHostController.navigateToHome() },
                 )
             },
             modifier = Modifier.fillMaxSize(),

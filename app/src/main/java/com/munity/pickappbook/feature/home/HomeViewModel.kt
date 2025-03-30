@@ -16,7 +16,7 @@ class HomeViewModel(private val thePlaybookRepo: ThePlaybookRepository) : ViewMo
     companion object {
         val Factory: ViewModelProvider.Factory = viewModelFactory {
             initializer {
-                val application = ((this[APPLICATION_KEY]) as PickAppBookApplication)
+                val application = (this[APPLICATION_KEY] as PickAppBookApplication)
                 HomeViewModel(application.thePlaybookRepository)
             }
         }
