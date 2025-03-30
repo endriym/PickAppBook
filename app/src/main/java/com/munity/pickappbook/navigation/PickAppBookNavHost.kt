@@ -18,6 +18,6 @@ fun PickAppBookNavHost(
         startDestination = startDestination,
         modifier = modifier
     ) {
-        homeScreen(modifier = modifier)
+        homeScreen(showSnackbar, modifier = modifier)
     }
 }
