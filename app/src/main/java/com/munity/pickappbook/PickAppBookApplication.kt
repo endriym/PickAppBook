@@ -15,7 +15,7 @@ private val Context.dataStore: DataStore<Preferences> by preferencesDataStore(
 
 class PickAppBookApplication : Application() {
     private lateinit var pickAppPrefsDataSource: PickAppPrefsDataSource
-    private lateinit var thePlaybookRepository: ThePlaybookRepository
+    lateinit var thePlaybookRepository: ThePlaybookRepository
 
     override fun onCreate() {
         super.onCreate()

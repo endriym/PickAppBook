@@ -11,6 +11,7 @@ import androidx.compose.ui.Modifier
 import androidx.navigation.compose.rememberNavController
 import com.munity.pickappbook.core.ui.components.PickAppBottomAppBar
 import com.munity.pickappbook.core.ui.theme.PickAppBookTheme
+import com.munity.pickappbook.feature.home.navigation.HomeRoute
 import com.munity.pickappbook.navigation.PickAppBookNavHost
 
 @Composable
@@ -29,7 +30,7 @@ fun PickAppBook() {
         ) { innerPadding ->
             PickAppBookNavHost(
                 navHostController = navHostController,
-                startDestination = TODO(),
+                startDestination = HomeRoute,
                 showSnackbar = { message ->
                     snackBarHostState.showSnackbar(message = message) == SnackbarResult.Dismissed
                 },

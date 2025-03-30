@@ -4,11 +4,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
+import com.munity.pickappbook.feature.home.navigation.homeScreen
 
 @Composable
 fun PickAppBookNavHost(
     navHostController: NavHostController,
-    startDestination: String,
+    startDestination: Any,
     showSnackbar: suspend (String) -> Boolean,
     modifier: Modifier = Modifier
 ) {
@@ -17,5 +18,6 @@ fun PickAppBookNavHost(
         startDestination = startDestination,
         modifier = modifier
     ) {
+        homeScreen(modifier = modifier)
     }
 }
