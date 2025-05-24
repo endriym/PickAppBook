@@ -8,6 +8,6 @@ import kotlinx.serialization.json.JsonIgnoreUnknownKeys
 @Serializable
 @JsonIgnoreUnknownKeys
 data class TokenInfo(
-    val expire: String,
+    val expiration: String,
     val token: String,
 )
