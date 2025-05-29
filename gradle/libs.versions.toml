@@ -1,5 +1,5 @@
 [versions]
-agp = "8.10.0"
+agp = "8.10.1"
 kotlin = "2.1.10"
 coreKtx = "1.16.0"
 junit = "4.13.2"
@@ -36,6 +36,7 @@ androidx-navigation-compose = { group = "androidx.navigation", name = "navigatio
 ktor-client-core = { group = "io.ktor", name = "ktor-client-core", version.ref = "ktorCore" }
 ktor-client-cio = { group = "io.ktor", name = "ktor-client-cio", version.ref = "ktorCore" }
 ktor-client-content-negotiation = { group = "io.ktor", name = "ktor-client-content-negotiation", version.ref = "ktorCore" }
+ktor-client-auth = { group = "io.ktor", name = "ktor-client-auth", version.ref = "ktorCore" }
 ktor-serialization-kotlinx-json = { group = "io.ktor", name = "ktor-serialization-kotlinx-json", version.ref = "ktorCore" }
 kotlinx-serialization = { group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-json", version.ref = "kotlinSerialization" }
 
