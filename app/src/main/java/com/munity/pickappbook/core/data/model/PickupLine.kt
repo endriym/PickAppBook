@@ -11,10 +11,10 @@ data class PickupLine(
     @SerialName("user_id") val userId: String,
     val username: String,
     @SerialName("updated_at") val updatedAt: String,
-    val tags: List<Tag>,
+    val tags: List<Tag>? = null,
     @SerialName("visible") val isVisible: Boolean,
-    val statistics: Statistics,
-    val reactions: List<Reaction>,
+    val statistics: Statistics? = null,
+    val reactions: List<Reaction>? = null,
 ) {
     @Serializable
     data class Statistics(
@@ -22,17 +22,24 @@ data class PickupLine(
         @SerialName("number_of_failures") val nFailures: Int,
         @SerialName("number_of_tries") val nTries: Int,
         @SerialName("success_percentage") val successPercentage: Float,
-    )
+    ) {
+        operator fun plus(values: Triple<Int, Int, Int>) = Statistics(
+            nTries = nTries + values.first,
+            nSuccesses = nSuccesses + values.second,
+            nFailures = nFailures + values.third,
+            successPercentage = (nSuccesses + values.second) / (nTries + values.first).toFloat()
+        )
+    }
 
     @Serializable
     data class Reaction(
-        @SerialName("starred") val isStarred: Boolean, val vote: String
+        @SerialName("starred") val isStarred: Boolean, val vote: String,
     )
 
     enum class Vote {
-        NONE, DOWNVOTE, UPVOTE
+        DOWNVOTE, NONE, UPVOTE,
     }
 
     val userJpegImageUrl: String
-        get() = "/$username.jpeg"
+        get() = "/images/$username.jpeg"
 }
