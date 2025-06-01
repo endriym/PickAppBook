@@ -61,6 +61,8 @@ dependencies {
     implementation(libs.ktor.client.auth)
     implementation(libs.ktor.serialization.kotlinx.json)
     implementation(libs.kotlinx.serialization)
+    implementation(libs.coil.kt)
+    implementation(libs.coil.ktor3)
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)

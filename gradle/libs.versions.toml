@@ -11,8 +11,9 @@ composeBom = "2025.05.01"
 lifecycleViewmodelCompose = "2.9.0"
 dataStore = "1.1.7"
 navigationCompose = "2.9.0"
-ktorCore = "3.0.3"
+ktorCore = "3.1.0"
 kotlinSerialization = "1.8.0"
+coilKt = "3.2.0"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -39,6 +40,8 @@ ktor-client-content-negotiation = { group = "io.ktor", name = "ktor-client-conte
 ktor-client-auth = { group = "io.ktor", name = "ktor-client-auth", version.ref = "ktorCore" }
 ktor-serialization-kotlinx-json = { group = "io.ktor", name = "ktor-serialization-kotlinx-json", version.ref = "ktorCore" }
 kotlinx-serialization = { group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-json", version.ref = "kotlinSerialization" }
+coil-kt = { group = "io.coil-kt.coil3", name = "coil-compose", version.ref = "coilKt" }
+coil-ktor3 = { group = "io.coil-kt.coil3", name = "coil-network-ktor3", version.ref = "coilKt" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
