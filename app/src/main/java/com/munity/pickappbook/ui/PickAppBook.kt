@@ -8,7 +8,6 @@ import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.SnackbarResult
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -18,8 +17,10 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navOptions
 import com.munity.pickappbook.core.ui.components.PickAppBottomAppBar
 import com.munity.pickappbook.core.ui.theme.PickAppBookTheme
+import com.munity.pickappbook.feature.account.navigation.navigateToAccount
 import com.munity.pickappbook.feature.home.navigation.HomeRoute
 import com.munity.pickappbook.feature.home.navigation.navigateToHome
+import com.munity.pickappbook.feature.search.navigation.navigateToSearch
 import com.munity.pickappbook.navigation.PickAppBookNavHost
 import com.munity.pickappbook.navigation.TopLevelDestination
 
@@ -28,7 +29,7 @@ fun PickAppBook() {
     PickAppBookTheme {
         val navHostController = rememberNavController()
         val snackBarHostState = remember { SnackbarHostState() }
-        var selectedItem by remember { mutableIntStateOf(TopLevelDestination.HOME.ordinal) }
+        var selectedItem by remember { mutableStateOf(TopLevelDestination.HOME.ordinal) }
 
         Scaffold(
             bottomBar = {
@@ -54,6 +55,14 @@ fun PickAppBook() {
 
                         when (selectedIndex) {
                             TopLevelDestination.HOME.ordinal -> navHostController.navigateToHome(
+                                topLevelNavOptions
+                            )
+
+                            TopLevelDestination.SEARCH.ordinal -> navHostController.navigateToSearch(
+                                topLevelNavOptions
+                            )
+
+                            TopLevelDestination.ACCOUNT.ordinal -> navHostController.navigateToAccount(
                                 topLevelNavOptions
                             )
                         }

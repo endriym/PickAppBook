@@ -2,11 +2,17 @@ package com.munity.pickappbook.navigation
 
 import androidx.annotation.StringRes
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.outlined.AccountCircle
 import androidx.compose.material.icons.outlined.Home
+import androidx.compose.material.icons.outlined.Search
 import androidx.compose.ui.graphics.vector.ImageVector
 import com.munity.pickappbook.R
+import com.munity.pickappbook.feature.account.navigation.AccountRoute
 import com.munity.pickappbook.feature.home.navigation.HomeRoute
+import com.munity.pickappbook.feature.search.navigation.SearchRoute
 import kotlin.reflect.KClass
 
 /**
@@ -39,4 +45,20 @@ enum class TopLevelDestination(
         route = HomeRoute::class,
         baseRoute = HomeRoute::class,
     ),
+    SEARCH(
+        selectedIcon = Icons.Filled.Search,
+        unselectedIcon = Icons.Outlined.Search,
+        iconTextId = R.string.search_icon_text,
+        titleTextId = R.string.search_title_text,
+        route = SearchRoute::class,
+        baseRoute = SearchRoute::class
+    ),
+    ACCOUNT(
+        selectedIcon = Icons.Filled.AccountCircle,
+        unselectedIcon = Icons.Outlined.AccountCircle,
+        iconTextId = R.string.account_icon_text,
+        titleTextId = R.string.you_title_text,
+        route = AccountRoute::class,
+        baseRoute = AccountRoute::class
+    )
 }
