@@ -11,13 +11,13 @@ fun PickAppBookNavHost(
     navHostController: NavHostController,
     startDestination: Any,
     showSnackbar: suspend (String) -> Boolean,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     NavHost(
         navController = navHostController,
         startDestination = startDestination,
         modifier = modifier
     ) {
-        homeScreen(showSnackbar, modifier = modifier)
+        homeScreen(showSnackbar)
     }
 }
