@@ -38,7 +38,6 @@ import io.ktor.serialization.kotlinx.json.json
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
-import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
 import kotlinx.serialization.json.putJsonArray
@@ -107,9 +106,7 @@ class ThePlaybookDataSource(
 
                 if (response.status == HttpStatusCode.Unauthorized) {
                     val wwwAuthenticateHeader = response.headers[HttpHeaders.WWWAuthenticate]
-                    if (wwwAuthenticateHeader?.startsWith(
-                            "JWT realm=", ignoreCase = true
-                        ) == true
+                    if (wwwAuthenticateHeader?.startsWith("JWT realm=", ignoreCase = true) == true
                     ) {
                         println("Received 401 with WWW-Authenticate: JWT realm=. Attempting token refresh.")
 
@@ -117,10 +114,14 @@ class ThePlaybookDataSource(
                         refreshMutex.withLock {
                             val storedPreferences = pickAppPrefsDataSource.storedPreference.first()
 
+                            if (storedPreferences.user == null || storedPreferences.password == null)
+                                throw ClientRequestException(response, response.status.description)
+
                             val newToken = try {
                                 val refreshResponse = refreshTokenRequest(
-                                    storedPreferences.user!!, storedPreferences.password!!
+                                    storedPreferences.user, storedPreferences.password
                                 )
+
                                 if (refreshResponse.status.isSuccess())
                                     refreshResponse.body<TokenInfo>()
                                 else {
@@ -173,7 +174,7 @@ class ThePlaybookDataSource(
             method = HttpMethod.Post
             url(CREATE_USER_ENDPOINT)
             contentType(ContentType.Application.Json)
-            setBody(Json.encodeToString(user))
+            setBody(user)
         }
 
         return checkReturnResult(httpRequestBuilder) { responseToTransform ->
@@ -231,6 +232,7 @@ class ThePlaybookDataSource(
         val httpRequestBuilder = HttpRequestBuilder().apply {
             method = HttpMethod.Post
             url(UPDATE_USER_ENDPOINT)
+            contentType(ContentType.Application.Json)
             setBody(buildJsonObject {
                 put("password", newPassword)
             })
@@ -266,6 +268,7 @@ class ThePlaybookDataSource(
         val httpRequestBuilder = HttpRequestBuilder().apply {
             method = HttpMethod.Post
             url(TAGS_ENDPOINT)
+            contentType(ContentType.Application.Json)
             setBody(buildJsonObject {
                 put("name", name)
                 put("description", description)
@@ -291,6 +294,7 @@ class ThePlaybookDataSource(
         val httpRequestBuilder = HttpRequestBuilder().apply {
             method = HttpMethod.Put
             url(TAGS_ENDPOINT + newTag.id)
+            contentType(ContentType.Application.Json)
             setBody(buildJsonObject {
                 put("name", newTag.name)
                 put("description", newTag.description)
@@ -345,6 +349,7 @@ class ThePlaybookDataSource(
         val httpRequestBuilder = HttpRequestBuilder().apply {
             method = HttpMethod.Post
             url(PICKUP_LINES_ENDPOINT)
+            contentType(ContentType.Application.Json)
             setBody(buildJsonObject {
                 put("title", title)
                 put("content", content)
@@ -369,7 +374,8 @@ class ThePlaybookDataSource(
         val httpRequestBuilder = HttpRequestBuilder().apply {
             method = HttpMethod.Put
             url("$PICKUP_LINES_ENDPOINT/${pickupLine.id}")
-            setBody(Json.encodeToString(pickupLine))
+            contentType(ContentType.Application.Json)
+            setBody(pickupLine)
         }
 
         return checkReturnResult(httpRequestBuilder) { responseToTransform ->
@@ -406,6 +412,7 @@ class ThePlaybookDataSource(
         val httpRequestBuilder = HttpRequestBuilder().apply {
             method = HttpMethod.Put
             url(REACTION_ENDPOINT.format(pickupLineId))
+            contentType(ContentType.Application.Json)
             setBody(newReaction)
         }
 
