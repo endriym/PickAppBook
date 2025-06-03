@@ -27,7 +27,7 @@ data class PickupLine(
             nTries = nTries + values.first,
             nSuccesses = nSuccesses + values.second,
             nFailures = nFailures + values.third,
-            successPercentage = (nSuccesses + values.second) / (nTries + values.first).toFloat()
+            successPercentage = if (nTries + values.first == 0) 0.toFloat() else (nSuccesses + values.second) / (nTries + values.first).toFloat() * 100
         )
     }
 
