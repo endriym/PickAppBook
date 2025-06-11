@@ -173,7 +173,7 @@ class ThePlaybookRepository(
     suspend fun updateStarred(pickupLineIndex: Int): String {
         val oldReaction =
             pickupLines[pickupLineIndex].reactions?.first()?.copy() ?: PickupLine.Reaction(
-                isStarred = false, vote = PickupLine.Vote.NONE.toString()
+                isStarred = false, vote = PickupLine.Vote.NONE
             )
 
         val newReaction = oldReaction.copy(isStarred = !oldReaction.isStarred)
@@ -184,15 +184,15 @@ class ThePlaybookRepository(
     suspend fun updateVote(pickupLineIndex: Int, newVote: PickupLine.Vote): String {
         val oldReaction =
             _pickupLines[pickupLineIndex].reactions?.first()?.copy() ?: PickupLine.Reaction(
-                isStarred = false, vote = PickupLine.Vote.NONE.toString()
+                isStarred = false, vote = PickupLine.Vote.NONE
             )
         val oldStatistics =
             _pickupLines[pickupLineIndex].statistics?.copy() ?: PickupLine.Statistics(
                 0, 0, 0, 0.toFloat()
             )
 
-        val (newVote, weights) = PickupLine.Vote.valueOf(oldReaction.vote).plus(newVote)
-        val newReaction = oldReaction.copy(vote = newVote.toString())
+        val (newVote, weights) = oldReaction.vote.plus(newVote)
+        val newReaction = oldReaction.copy(vote = newVote)
 
         // Calculate new statistics with `weights`
         _pickupLines[pickupLineIndex] =

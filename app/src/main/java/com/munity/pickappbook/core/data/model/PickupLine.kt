@@ -33,7 +33,7 @@ data class PickupLine(
 
     @Serializable
     data class Reaction(
-        @SerialName("starred") val isStarred: Boolean, val vote: String,
+        @SerialName("starred") val isStarred: Boolean, val vote: Vote,
     )
 
     enum class Vote {

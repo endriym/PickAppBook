@@ -66,7 +66,7 @@ fun PickupCard(
 ) {
     var expanded by remember { mutableStateOf(false) }
     val isStarred = reactions?.first()?.isStarred == true
-    val vote = PickupLine.Vote.valueOf(reactions?.first()?.vote ?: "NONE")
+    val vote = reactions?.first()?.vote ?: PickupLine.Vote.NONE
 
     Card(
         modifier = modifier
