@@ -1,4 +1,4 @@
-package com.munity.pickappbook.feature.home
+package com.munity.pickappbook.feature.home.loggedout
 
 import android.graphics.BitmapFactory
 import android.util.Log
@@ -32,6 +32,7 @@ import androidx.compose.material3.Tab
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -42,6 +43,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.munity.pickappbook.core.ui.components.PasswordTextField
 
 private enum class SelectedTab(val index: Int) {
@@ -50,23 +52,13 @@ private enum class SelectedTab(val index: Int) {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun HomeScreenNotLoggedIn(
-    usernameLoginTFValue: String,
-    onUsernameLoginTFChange: (String) -> Unit,
-    passwordLoginTFValue: String,
-    onPasswordLoginTFValue: (String) -> Unit,
-    onLoginBtnClick: () -> Unit,
-    usernameCreateTFValue: String,
-    onUsernameCreateTFValue: (String) -> Unit,
-    passwordCreateTFValue: String,
-    onPasswordCreateTFValue: (String) -> Unit,
-    onCreateUserBtnClick: () -> Unit,
-    onImagePicked: (ByteArray?) -> Unit,
-    imageByteArray: ByteArray?,
-    isLoading: Boolean,
-    onRemoveImagePicked: () -> Unit,
+fun LoggedOutHomeScreen(
     modifier: Modifier = Modifier,
 ) {
+    val loggedOutHomeVM: LoggedOutHomeViewModel =
+        viewModel(factory = LoggedOutHomeViewModel.Factory)
+    val loggedOutHomeUiState by loggedOutHomeVM.loggedOutUiState.collectAsState()
+
     var selectedTab by remember { mutableStateOf(SelectedTab.LOGIN) }
 
     Column(
@@ -111,30 +103,30 @@ fun HomeScreenNotLoggedIn(
 
             when (selectedTab) {
                 SelectedTab.LOGIN -> LoginScreen(
-                    usernameLoginTFValue = usernameLoginTFValue,
-                    onUsernameLoginTFChange = onUsernameLoginTFChange,
-                    passwordLoginTFValue = passwordLoginTFValue,
-                    onPasswordLoginTFValue = onPasswordLoginTFValue,
-                    onLoginBtnClick = onLoginBtnClick,
-                    isIndefIndicatorVisible = isLoading,
+                    usernameLoginTFValue = loggedOutHomeUiState.usernameLogin,
+                    onUsernameLoginTFChange = loggedOutHomeVM::onUsernameLoginTFChange,
+                    passwordLoginTFValue = loggedOutHomeUiState.passwordLogin,
+                    onPasswordLoginTFValue = loggedOutHomeVM::onPasswordLoginTFChange,
+                    onLoginBtnClick = loggedOutHomeVM::onLoginBtnClick,
+                    isIndefIndicatorVisible = loggedOutHomeUiState.isLoading,
                     modifier = Modifier.padding(top = 16.dp),
                 )
 
                 SelectedTab.SIGN_UP -> SignUpScreen(
-                    usernameCreateTFValue = usernameCreateTFValue,
-                    onUsernameCreateTFValue = onUsernameCreateTFValue,
-                    passwordCreateTFValue = passwordCreateTFValue,
-                    onPasswordCreateTFValue = onPasswordCreateTFValue,
-                    onCreateUserBtnClick = onCreateUserBtnClick,
-                    onImagePicked = onImagePicked,
-                    imageByteArray = imageByteArray,
-                    isIndefIndicatorVisible = isLoading,
-                    onRemoveImagePicked = onRemoveImagePicked,
+                    usernameCreateTFValue = loggedOutHomeUiState.usernameCreate,
+                    onUsernameCreateTFValue = loggedOutHomeVM::onUsernameCreateTFChange,
+                    passwordCreateTFValue = loggedOutHomeUiState.passwordCreate,
+                    onPasswordCreateTFValue = loggedOutHomeVM::onPasswordCreateTFChange,
+                    onCreateUserBtnClick = loggedOutHomeVM::onCreateUserBtnClick,
+                    onImagePicked = loggedOutHomeVM::onImagePicked,
+                    imageByteArray = loggedOutHomeUiState.imageByteArray,
+                    isIndefIndicatorVisible = loggedOutHomeUiState.isLoading,
+                    onRemoveImagePicked = loggedOutHomeVM::onRemoveImagePicked,
                     modifier = Modifier.padding(top = 16.dp),
                 )
             }
 
-            if (isLoading) {
+            if (loggedOutHomeUiState.isLoading) {
                 CircularProgressIndicator(
                     color = MaterialTheme.colorScheme.secondary,
                     trackColor = MaterialTheme.colorScheme.surfaceVariant,

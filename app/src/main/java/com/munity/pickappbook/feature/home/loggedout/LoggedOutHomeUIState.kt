@@ -1,6 +1,6 @@
-package com.munity.pickappbook.feature.home
+package com.munity.pickappbook.feature.home.loggedout
 
-data class HomeUIState(
+data class LoggedOutHomeUIState(
     val usernameLogin: String = "",
     val passwordLogin: String = "",
     val usernameCreate: String = "",
@@ -12,7 +12,7 @@ data class HomeUIState(
         if (this === other) return true
         if (javaClass != other?.javaClass) return false
 
-        other as HomeUIState
+        other as LoggedOutHomeUIState
 
         if (isLoading != other.isLoading) return false
         if (usernameLogin != other.usernameLogin) return false

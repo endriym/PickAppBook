@@ -6,4 +6,6 @@
     <string name="search_title_text">Search</string>
     <string name="account_icon_text">Account</string>
     <string name="you_title_text">You</string>
+    <string name="visible_to_everyone">Visible to everyone</string>
+    <string name="visible_only_to_you">Visible only to you</string>
 </resources>
