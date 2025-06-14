@@ -5,6 +5,7 @@ import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavOptions
 import androidx.navigation.compose.composable
+import com.munity.pickappbook.feature.account.AccountScreen
 import kotlinx.serialization.Serializable
 
 @Serializable
@@ -15,8 +16,9 @@ fun NavController.navigateToAccount(navOptions: NavOptions? = null) =
 
 fun NavGraphBuilder.accountScreen(
     showSnackbar: suspend (String) -> Boolean,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     composable<AccountRoute> { navBackStackEntry ->
+        AccountScreen(modifier = modifier)
     }
 }

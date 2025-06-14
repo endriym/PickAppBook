@@ -1,6 +1,8 @@
 package com.munity.pickappbook.feature.home.loggedin
 
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
@@ -10,6 +12,7 @@ import com.munity.pickappbook.PickAppBookApplication
 import com.munity.pickappbook.core.data.model.PickupLine
 import com.munity.pickappbook.core.data.model.Tag
 import com.munity.pickappbook.core.data.repository.ThePlaybookRepository
+import com.munity.pickappbook.core.data.repository.swapList
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -30,12 +33,14 @@ class LoggedInHomeViewModel(private val thePlaybookRepo: ThePlaybookRepository) 
     private val _loggedInUiState = MutableStateFlow<LoggedInHomeUIState>(LoggedInHomeUIState())
     val loggedInHomeUiState: StateFlow<LoggedInHomeUIState> = _loggedInUiState.asStateFlow()
 
-    val pickupLines = thePlaybookRepo.pickupLines
+    private val _pickupLines: SnapshotStateList<PickupLine> = mutableStateListOf<PickupLine>()
+    val pickupLines: List<PickupLine> = _pickupLines
 
     fun onVoteClick(pickupLineIndex: Int, newVote: PickupLine.Vote) {
         viewModelScope.launch {
             val message = thePlaybookRepo.updateVote(
                 pickupLineIndex = pickupLineIndex,
+                pickupLines = _pickupLines,
                 newVote = newVote
             )
 
@@ -45,7 +50,7 @@ class LoggedInHomeViewModel(private val thePlaybookRepo: ThePlaybookRepository) 
 
     fun onStarredBtnClick(pickupLineIndex: Int) {
         viewModelScope.launch {
-            thePlaybookRepo.updateStarred(pickupLineIndex)
+            thePlaybookRepo.updateStarred(pickupLineIndex, _pickupLines)
         }
     }
 
@@ -55,8 +60,11 @@ class LoggedInHomeViewModel(private val thePlaybookRepo: ThePlaybookRepository) 
                 oldState.copy(isRefreshing = true)
             }
 
-            val message = thePlaybookRepo.getPickupLineFeed()
-            thePlaybookRepo.emitMessage(message)
+            val result = thePlaybookRepo.getPickupLineFeed()
+//            thePlaybookRepo.emitMessage(message)
+            result.onSuccess {
+                _pickupLines.swapList(it)
+            }
 
             _loggedInUiState.update { oldState ->
                 oldState.copy(isRefreshing = false)

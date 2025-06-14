@@ -87,6 +87,8 @@ fun PickupCard(
                         .crossfade(true)
                         .build(),
                     placeholder = rememberVectorPainter(Icons.Default.AccountCircle),
+                    fallback = rememberVectorPainter(Icons.Default.AccountCircle),
+                    error = rememberVectorPainter(Icons.Default.AccountCircle),
                     contentDescription = "Author's profile picture",
                     contentScale = ContentScale.Crop,
                     modifier = Modifier
@@ -201,7 +203,6 @@ fun UpvoteDownvoteContainer(
                     modifier = Modifier.size(28.dp)
                 )
             }
-
 
             Text(
                 text = "${statistics?.successPercentage?.toInt() ?: 0} %",
