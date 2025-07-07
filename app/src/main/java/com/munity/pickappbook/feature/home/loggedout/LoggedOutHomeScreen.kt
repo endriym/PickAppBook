@@ -115,6 +115,8 @@ fun LoggedOutHomeScreen(
                 SelectedTab.SIGN_UP -> SignUpScreen(
                     usernameCreateTFValue = loggedOutHomeUiState.usernameCreate,
                     onUsernameCreateTFValue = loggedOutHomeVM::onUsernameCreateTFChange,
+                    displayNameCreateTFValue = loggedOutHomeUiState.displayNameCreate,
+                    onDisplayNameCreateTFValue = loggedOutHomeVM::onDisplayNameCreateTFChange,
                     passwordCreateTFValue = loggedOutHomeUiState.passwordCreate,
                     onPasswordCreateTFValue = loggedOutHomeVM::onPasswordCreateTFChange,
                     onCreateUserBtnClick = loggedOutHomeVM::onCreateUserBtnClick,
@@ -184,6 +186,8 @@ private fun LoginScreen(
 private fun SignUpScreen(
     usernameCreateTFValue: String,
     onUsernameCreateTFValue: (String) -> Unit,
+    displayNameCreateTFValue: String,
+    onDisplayNameCreateTFValue: (String) -> Unit,
     passwordCreateTFValue: String,
     onPasswordCreateTFValue: (String) -> Unit,
     onImagePicked: (ByteArray?) -> Unit,
@@ -252,6 +256,17 @@ private fun SignUpScreen(
             onValueChange = onUsernameCreateTFValue,
             placeholder = { Text(text = "Username") },
             label = { Text(text = "Username") },
+            singleLine = true,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = 8.dp, horizontal = 16.dp)
+        )
+
+        TextField(
+            value = displayNameCreateTFValue,
+            onValueChange = onDisplayNameCreateTFValue,
+            placeholder = { Text(text = "Display name") },
+            label = { Text(text = "Display name") },
             singleLine = true,
             modifier = Modifier
                 .fillMaxWidth()

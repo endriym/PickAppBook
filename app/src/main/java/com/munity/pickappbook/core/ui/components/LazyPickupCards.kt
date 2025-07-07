@@ -10,8 +10,8 @@ import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.munity.pickappbook.core.data.model.PickupLine
-import com.munity.pickappbook.core.data.model.Tag
+import com.munity.pickappbook.core.data.remote.model.PickupLineResponse
+import com.munity.pickappbook.core.data.remote.model.TagResponse
 import com.munity.pickappbook.util.DateUtil
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -19,10 +19,10 @@ import com.munity.pickappbook.util.DateUtil
 fun PullToRefreshLazyPickupCards(
     isRefreshing: Boolean,
     onRefresh: () -> Unit,
-    pickupLines: List<PickupLine>,
+    pickupLines: List<PickupLineResponse>,
     onStarredBtnClick: (Int) -> Unit,
-    onVoteClick: (Int, PickupLine.Vote) -> Unit,
-    onTagClick: (Tag) -> Unit,
+    onVoteClick: (Int, PickupLineResponse.Vote) -> Unit,
+    onTagClick: (TagResponse) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     PullToRefreshBox(
@@ -42,10 +42,10 @@ fun PullToRefreshLazyPickupCards(
 
 @Composable
 private fun LazyPickupCards(
-    pickupLines: List<PickupLine>,
+    pickupLines: List<PickupLineResponse>,
     onStarredBtnClick: (Int) -> Unit,
-    onVoteClick: (Int, PickupLine.Vote) -> Unit,
-    onTagClick: (Tag) -> Unit,
+    onVoteClick: (Int, PickupLineResponse.Vote) -> Unit,
+    onTagClick: (TagResponse) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     LazyColumn(
@@ -65,7 +65,7 @@ private fun LazyPickupCards(
                 titleLine = pickupLine.title,
                 line = pickupLine.content,
                 tags = pickupLine.tags,
-                reactions = pickupLine.reactions,
+                reaction = pickupLine.reaction,
                 statistics = pickupLine.statistics,
                 onStarredBtnClick = { onStarredBtnClick(index) },
                 onVoteClick = { vote -> onVoteClick(index, vote) },

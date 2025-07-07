@@ -1,10 +1,10 @@
-package com.munity.pickappbook.core.data.model
+package com.munity.pickappbook.core.data.remote.model
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class Tag(
+data class TagResponse(
     val id: String,
     val name: String,
     val description: String,

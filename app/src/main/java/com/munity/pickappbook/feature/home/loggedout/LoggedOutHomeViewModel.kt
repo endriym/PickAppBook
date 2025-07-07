@@ -46,6 +46,12 @@ class LoggedOutHomeViewModel(private val thePlaybookRepo: ThePlaybookRepository)
         }
     }
 
+    fun onDisplayNameCreateTFChange(newDisplayNameCreate: String) {
+        _loggedOutUiState.update { oldState ->
+            oldState.copy(displayNameCreate = newDisplayNameCreate)
+        }
+    }
+
     fun onPasswordCreateTFChange(newPasswordCreate: String) {
         _loggedOutUiState.update { oldState ->
             oldState.copy(passwordCreate = newPasswordCreate)
@@ -69,11 +75,11 @@ class LoggedOutHomeViewModel(private val thePlaybookRepo: ThePlaybookRepository)
                 oldState.copy(isLoading = true)
             }
 
-            val message =
+            val message = with(_loggedOutUiState.value) {
                 thePlaybookRepo.login(
-                    _loggedOutUiState.value.usernameLogin,
-                    _loggedOutUiState.value.passwordLogin
+                    username = usernameLogin, password = passwordLogin
                 )
+            }
             thePlaybookRepo.emitMessage(message)
 
             // Enable 'Login' and 'Sign Up' button, make the progress indicator invisible
@@ -124,12 +130,14 @@ class LoggedOutHomeViewModel(private val thePlaybookRepo: ThePlaybookRepository)
             var message = "Trying to sign up..."
             thePlaybookRepo.emitMessage(message)
 
-            message = thePlaybookRepo.signup(
-                username = _loggedOutUiState.value.usernameCreate,
-                password = _loggedOutUiState.value.passwordCreate,
-                profilePicture = _loggedOutUiState.value.imageByteArray!!
-            )
-
+            message = with(_loggedOutUiState.value) {
+                thePlaybookRepo.signup(
+                    username = usernameCreate,
+                    displayName = displayNameCreate,
+                    password = passwordCreate,
+                    profilePicture = imageByteArray!!
+                )
+            }
             thePlaybookRepo.emitMessage(message)
 
             // Enable 'Login' and 'Sign Up' button, make the progress indicator invisible

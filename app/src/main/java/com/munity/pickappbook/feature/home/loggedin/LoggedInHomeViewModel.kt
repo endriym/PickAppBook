@@ -9,10 +9,9 @@ import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import com.munity.pickappbook.PickAppBookApplication
-import com.munity.pickappbook.core.data.model.PickupLine
-import com.munity.pickappbook.core.data.model.Tag
+import com.munity.pickappbook.core.data.remote.model.PickupLineResponse
+import com.munity.pickappbook.core.data.remote.model.TagResponse
 import com.munity.pickappbook.core.data.repository.ThePlaybookRepository
-import com.munity.pickappbook.core.data.repository.swapList
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -33,10 +32,11 @@ class LoggedInHomeViewModel(private val thePlaybookRepo: ThePlaybookRepository) 
     private val _loggedInUiState = MutableStateFlow<LoggedInHomeUIState>(LoggedInHomeUIState())
     val loggedInHomeUiState: StateFlow<LoggedInHomeUIState> = _loggedInUiState.asStateFlow()
 
-    private val _pickupLines: SnapshotStateList<PickupLine> = mutableStateListOf<PickupLine>()
-    val pickupLines: List<PickupLine> = _pickupLines
+    private val _pickupLines: SnapshotStateList<PickupLineResponse> =
+        mutableStateListOf<PickupLineResponse>()
+    val pickupLines: List<PickupLineResponse> = _pickupLines
 
-    fun onVoteClick(pickupLineIndex: Int, newVote: PickupLine.Vote) {
+    fun onVoteClick(pickupLineIndex: Int, newVote: PickupLineResponse.Vote) {
         viewModelScope.launch {
             val message = thePlaybookRepo.updateVote(
                 pickupLineIndex = pickupLineIndex,
@@ -60,11 +60,8 @@ class LoggedInHomeViewModel(private val thePlaybookRepo: ThePlaybookRepository) 
                 oldState.copy(isRefreshing = true)
             }
 
-            val result = thePlaybookRepo.getPickupLineFeed()
-//            thePlaybookRepo.emitMessage(message)
-            result.onSuccess {
-                _pickupLines.swapList(it)
-            }
+            val message = thePlaybookRepo.getPickupLineFeed(_pickupLines)
+            thePlaybookRepo.emitMessage(message)
 
             _loggedInUiState.update { oldState ->
                 oldState.copy(isRefreshing = false)
@@ -175,7 +172,7 @@ class LoggedInHomeViewModel(private val thePlaybookRepo: ThePlaybookRepository) 
         }
     }
 
-    fun onSearchedTagChipClick(clickedTag: Tag) {
+    fun onSearchedTagChipClick(clickedTag: TagResponse) {
         _loggedInUiState.update { oldState ->
             val newTags = if (clickedTag in oldState.tagsToAdd)
                 oldState.tagsToAdd.remove(clickedTag)

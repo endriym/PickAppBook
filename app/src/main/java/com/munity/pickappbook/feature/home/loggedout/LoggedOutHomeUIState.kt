@@ -4,6 +4,7 @@ data class LoggedOutHomeUIState(
     val usernameLogin: String = "",
     val passwordLogin: String = "",
     val usernameCreate: String = "",
+    val displayNameCreate: String = "",
     val passwordCreate: String = "",
     val isLoading: Boolean = false,
     val imageByteArray: ByteArray? = null,
@@ -18,6 +19,7 @@ data class LoggedOutHomeUIState(
         if (usernameLogin != other.usernameLogin) return false
         if (passwordLogin != other.passwordLogin) return false
         if (usernameCreate != other.usernameCreate) return false
+        if (displayNameCreate != other.displayNameCreate) return false
         if (passwordCreate != other.passwordCreate) return false
         if (!imageByteArray.contentEquals(other.imageByteArray)) return false
 
@@ -29,6 +31,7 @@ data class LoggedOutHomeUIState(
         result = 31 * result + usernameLogin.hashCode()
         result = 31 * result + passwordLogin.hashCode()
         result = 31 * result + usernameCreate.hashCode()
+        result = 31 * result + displayNameCreate.hashCode()
         result = 31 * result + passwordCreate.hashCode()
         result = 31 * result + (imageByteArray?.contentHashCode() ?: 0)
         return result

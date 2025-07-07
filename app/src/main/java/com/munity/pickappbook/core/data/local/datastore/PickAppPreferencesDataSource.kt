@@ -7,23 +7,24 @@ import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.emptyPreferences
 import androidx.datastore.preferences.core.stringPreferencesKey
-import com.munity.pickappbook.core.data.model.StoredPreferences
+import com.munity.pickappbook.core.data.local.datastore.model.StoredPreferences
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.map
 
-class PickAppPrefsDataSource(
-    private val dataStore: DataStore<Preferences>
-) {
+class PickAppPreferencesDataSource(
+    private val dataStore: DataStore<Preferences>,
+) : PreferencesStorage {
     private companion object {
-        val USERNAME_KEY = stringPreferencesKey("user")
+        val USERNAME_KEY = stringPreferencesKey("username")
+        val DISPLAY_NAME_KEY = stringPreferencesKey("display_name")
         val PASSWORD_KEY = stringPreferencesKey("password")
         val ACCESS_TOKEN_KEY = stringPreferencesKey("access_token")
-        val EXPIRES_KEY = stringPreferencesKey("expires")
+        val EXPIRATION_KEY = stringPreferencesKey("expiration")
         private const val TAG = "PickAppPrefsDataSource"
     }
 
-    val storedPreference: Flow<StoredPreferences> = dataStore.data
+    override val storedPreferences: Flow<StoredPreferences> = dataStore.data
         .catch { exception ->
             if (exception is IOException) {
                 Log.e(TAG, "Error reading preferences", exception)
@@ -32,36 +33,38 @@ class PickAppPrefsDataSource(
                 throw exception
         }.map { preferences ->
             StoredPreferences(
-                user = preferences[USERNAME_KEY],
+                username = preferences[USERNAME_KEY],
+                displayName = preferences[DISPLAY_NAME_KEY],
                 password = preferences[PASSWORD_KEY],
                 accessToken = preferences[ACCESS_TOKEN_KEY],
-                expiration = preferences[EXPIRES_KEY]
+                expiration = preferences[EXPIRATION_KEY]
             )
         }
 
-    suspend fun saveNewUser(username: String, password: String) {
-        dataStore.edit {preferences ->
+    override suspend fun saveNewUser(username: String, displayName: String, password: String) {
+        dataStore.edit { preferences ->
             preferences[USERNAME_KEY] = username
+            preferences[DISPLAY_NAME_KEY] = displayName
             preferences[PASSWORD_KEY] = password
         }
     }
 
-    suspend fun saveUsername(newUsername: String) {
+    override suspend fun saveDisplayName(newDisplayName: String) {
         dataStore.edit { preferences ->
-            preferences[USERNAME_KEY] = newUsername
+            preferences[DISPLAY_NAME_KEY] = newDisplayName
         }
     }
 
-    suspend fun savePassword(newPassword: String) {
+    override suspend fun savePassword(newPassword: String) {
         dataStore.edit { preferences ->
             preferences[USERNAME_KEY] = newPassword
         }
     }
 
-    suspend fun saveAccessToken(newAccessToken: String, expires: String) {
+    override suspend fun saveAccessToken(newAccessToken: String, expiration: String) {
         dataStore.edit { preferences ->
             preferences[ACCESS_TOKEN_KEY] = newAccessToken
-            preferences[EXPIRES_KEY] = expires
+            preferences[EXPIRATION_KEY] = expiration
         }
     }
 }

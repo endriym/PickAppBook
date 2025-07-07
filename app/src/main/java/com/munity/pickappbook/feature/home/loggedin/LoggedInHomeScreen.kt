@@ -35,7 +35,7 @@ fun LoggedInHomeScreen(
             pickupLines = loggedInHomeVM.pickupLines,
             onStarredBtnClick = loggedInHomeVM::onStarredBtnClick,
             onVoteClick = loggedInHomeVM::onVoteClick,
-            onTagClick = { /*TODO()*/ },
+            onTagClick = {  /* TODO() */ },
             modifier = Modifier.padding(innerPadding)
         )
 

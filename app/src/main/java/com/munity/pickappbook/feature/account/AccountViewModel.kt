@@ -8,9 +8,8 @@ import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import com.munity.pickappbook.PickAppBookApplication
-import com.munity.pickappbook.core.data.model.PickupLine
+import com.munity.pickappbook.core.data.remote.model.PickupLineResponse
 import com.munity.pickappbook.core.data.repository.ThePlaybookRepository
-import com.munity.pickappbook.core.data.repository.swapList
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -45,9 +44,9 @@ class AccountViewModel(private val thePlaybookRepo: ThePlaybookRepository) : Vie
         initialValue = null
     )
 
-    private val _personalPickupLines: SnapshotStateList<PickupLine> =
-        mutableStateListOf<PickupLine>()
-    val personalPickupLines: List<PickupLine> = _personalPickupLines
+    private val _personalPickupLines: SnapshotStateList<PickupLineResponse> =
+        mutableStateListOf<PickupLineResponse>()
+    val personalPickupLines: List<PickupLineResponse> = _personalPickupLines
 
 
     fun onPersonalPLRefresh() {
@@ -56,11 +55,8 @@ class AccountViewModel(private val thePlaybookRepo: ThePlaybookRepository) : Vie
                 oldState.copy(isPersonalRefreshing = true)
             }
 
-            val result = thePlaybookRepo.getPickupLineList()
-//            thePlaybookRepo.emitMessage(message)
-            result.onSuccess {
-                _personalPickupLines.swapList(it)
-            }
+            val message = thePlaybookRepo.getPickupLineList(_personalPickupLines)
+            thePlaybookRepo.emitMessage(message)
 
             _accountUiState.update { oldState ->
                 oldState.copy(isPersonalRefreshing = false)
@@ -74,7 +70,7 @@ class AccountViewModel(private val thePlaybookRepo: ThePlaybookRepository) : Vie
         }
     }
 
-    fun onPersonalPLVoteClick(pickupLineIndex: Int, newVote: PickupLine.Vote) {
+    fun onPersonalPLVoteClick(pickupLineIndex: Int, newVote: PickupLineResponse.Vote) {
         viewModelScope.launch {
             val message = thePlaybookRepo.updateVote(
                 pickupLineIndex = pickupLineIndex,
@@ -98,11 +94,8 @@ class AccountViewModel(private val thePlaybookRepo: ThePlaybookRepository) : Vie
                 oldState.copy(isPersonalRefreshing = true)
             }
 
-            val result = thePlaybookRepo.getPickupLineList()
-//            thePlaybookRepo.emitMessage(message)
-            result.onSuccess {
-                _personalPickupLines.swapList(it)
-            }
+            val message = thePlaybookRepo.getPickupLineList(_personalPickupLines)
+            thePlaybookRepo.emitMessage(message)
 
             _accountUiState.update { oldState ->
                 oldState.copy(isPersonalRefreshing = false)

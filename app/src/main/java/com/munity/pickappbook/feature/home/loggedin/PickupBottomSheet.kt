@@ -48,7 +48,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.munity.pickappbook.R
-import com.munity.pickappbook.core.data.model.Tag
+import com.munity.pickappbook.core.data.remote.model.TagResponse
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -59,13 +59,13 @@ fun PickupBottomSheet(
     onTitleTFChange: (String) -> Unit,
     contentTFValue: String,
     onContentTFChange: (String) -> Unit,
-    tagsToAdd: List<Tag>,
+    tagsToAdd: List<TagResponse>,
     onAddedTagsItemClick: (Int) -> Unit,
     onSearchTagBtnClick: () -> Unit,
     isTagSearcherVisible: Boolean,
     isSearchingTags: Boolean,
-    searchedTags: List<Tag>,
-    onSearchedTagChipClick: (Tag) -> Unit,
+    searchedTags: List<TagResponse>,
+    onSearchedTagChipClick: (TagResponse) -> Unit,
     onAddTagBtnClick: () -> Unit,
     tagNameTFValue: String,
     onTagNameChangeValue: (String) -> Unit,
@@ -271,9 +271,9 @@ fun PickupBottomSheet(
 @Composable
 fun SearchTagCard(
     isSearchingTags: Boolean,
-    searchedTags: List<Tag>,
-    onSearchedTagChipClick: (Tag) -> Unit,
-    addedTags: List<Tag>,
+    searchedTags: List<TagResponse>,
+    onSearchedTagChipClick: (TagResponse) -> Unit,
+    addedTags: List<TagResponse>,
     modifier: Modifier = Modifier,
 ) {
     var query by remember { mutableStateOf("") }
