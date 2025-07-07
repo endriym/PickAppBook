@@ -7,8 +7,8 @@ import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import com.munity.pickappbook.PickAppBookApplication
-import com.munity.pickappbook.core.data.model.PickupLine
-import com.munity.pickappbook.core.data.model.Tag
+import com.munity.pickappbook.core.data.remote.model.PickupLineResponse
+import com.munity.pickappbook.core.data.remote.model.TagResponse
 import com.munity.pickappbook.core.data.repository.ThePlaybookRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -32,7 +32,7 @@ class LoggedInHomeViewModel(private val thePlaybookRepo: ThePlaybookRepository) 
 
     val pickupLines = thePlaybookRepo.pickupLines
 
-    fun onVoteClick(pickupLineIndex: Int, newVote: PickupLine.Vote) {
+    fun onVoteClick(pickupLineIndex: Int, newVote: PickupLineResponse.Vote) {
         viewModelScope.launch {
             val message = thePlaybookRepo.updateVote(
                 pickupLineIndex = pickupLineIndex,
@@ -167,7 +167,7 @@ class LoggedInHomeViewModel(private val thePlaybookRepo: ThePlaybookRepository) 
         }
     }
 
-    fun onSearchedTagChipClick(clickedTag: Tag) {
+    fun onSearchedTagChipClick(clickedTag: TagResponse) {
         _loggedInUiState.update { oldState ->
             val newTags = if (clickedTag in oldState.tagsToAdd)
                 oldState.tagsToAdd.remove(clickedTag)

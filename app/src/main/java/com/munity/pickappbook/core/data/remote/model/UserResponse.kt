@@ -1,4 +1,4 @@
-package com.munity.pickappbook.core.data.model
+package com.munity.pickappbook.core.data.remote.model
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -11,8 +11,9 @@ import kotlinx.serialization.Serializable
  * @param image the base 64 encoded string image for the new account
  */
 @Serializable
-data class User(
+data class UserResponse(
     val username: String,
+    @SerialName("display_name") val displayName: String,
     val password: String,
-    @SerialName("user_image") val image: String
+    @SerialName("user_image") val image: String,
 )

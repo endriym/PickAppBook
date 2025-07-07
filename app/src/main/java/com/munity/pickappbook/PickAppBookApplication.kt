@@ -5,8 +5,8 @@ import android.content.Context
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.preferencesDataStore
-import com.munity.pickappbook.core.data.local.datastore.PickAppPrefsDataSource
-import com.munity.pickappbook.core.data.remote.ThePlaybookDataSource
+import com.munity.pickappbook.core.data.local.datastore.PickAppPreferencesDataSource
+import com.munity.pickappbook.core.data.remote.ThePlaybookApi
 import com.munity.pickappbook.core.data.repository.ThePlaybookRepository
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -18,8 +18,8 @@ private val Context.dataStore: DataStore<Preferences> by preferencesDataStore(
 )
 
 class PickAppBookApplication : Application() {
-    private lateinit var pickAppPrefsDataSource: PickAppPrefsDataSource
-    private lateinit var thePlaybookDataSource: ThePlaybookDataSource
+    private lateinit var pickAppPreferencesDataSource: PickAppPreferencesDataSource
+    private lateinit var thePlaybookApi: ThePlaybookApi
     lateinit var thePlaybookRepository: ThePlaybookRepository
     lateinit var applicationCoroutineScope: CoroutineScope
 
@@ -28,13 +28,12 @@ class PickAppBookApplication : Application() {
 
         applicationCoroutineScope = CoroutineScope(context = Dispatchers.IO)
 
-        pickAppPrefsDataSource = PickAppPrefsDataSource(dataStore = dataStore)
-        thePlaybookDataSource =
-            ThePlaybookDataSource(pickAppPrefsDataSource = pickAppPrefsDataSource)
+        pickAppPreferencesDataSource = PickAppPreferencesDataSource(dataStore = dataStore)
+        thePlaybookApi = ThePlaybookApi(preferencesStorage = pickAppPreferencesDataSource)
         thePlaybookRepository = ThePlaybookRepository(
             parentScope = applicationCoroutineScope,
-            pickAppPrefsDS = pickAppPrefsDataSource,
-            thePlaybookDS = thePlaybookDataSource
+            pickAppPrefsDS = pickAppPreferencesDataSource,
+            thePlaybookApi = thePlaybookApi
         )
     }
 

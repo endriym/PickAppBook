@@ -46,8 +46,8 @@ import coil3.compose.AsyncImage
 import coil3.request.ImageRequest
 import coil3.request.crossfade
 import com.munity.pickappbook.R
-import com.munity.pickappbook.core.data.model.PickupLine
-import com.munity.pickappbook.core.data.model.Tag
+import com.munity.pickappbook.core.data.remote.model.PickupLineResponse
+import com.munity.pickappbook.core.data.remote.model.TagResponse
 
 @Composable
 fun PickupCard(
@@ -56,17 +56,15 @@ fun PickupCard(
     postDate: String,
     titleLine: String,
     line: String,
-    reactions: List<PickupLine.Reaction>?,
+    reaction: PickupLineResponse.Reaction,
     onStarredBtnClick: () -> Unit,
-    statistics: PickupLine.Statistics?,
-    onVoteClick: (PickupLine.Vote) -> Unit,
-    tags: List<Tag>?,
-    onTagClick: (Tag) -> Unit,
+    statistics: PickupLineResponse.Statistics?,
+    onVoteClick: (PickupLineResponse.Vote) -> Unit,
+    tags: List<TagResponse>?,
+    onTagClick: (TagResponse) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     var expanded by remember { mutableStateOf(false) }
-    val isStarred = reactions?.first()?.isStarred == true
-    val vote = reactions?.first()?.vote ?: PickupLine.Vote.NONE
 
     Card(
         modifier = modifier
@@ -108,9 +106,9 @@ fun PickupCard(
                     onStarredBtnClick, modifier = Modifier.padding(end = 4.dp)
             ) {
                 val likedIcon =
-                    if (isStarred) Icons.Filled.Favorite else Icons.Filled.FavoriteBorder
+                    if (reaction.isStarred) Icons.Filled.Favorite else Icons.Filled.FavoriteBorder
                 val contentDescription =
-                    if (isStarred) "Unlike pickup line" else "Like pickup line"
+                    if (reaction.isStarred) "Unlike pickup line" else "Like pickup line"
                 Icon(
                     imageVector = likedIcon,
                     contentDescription = contentDescription
@@ -131,7 +129,7 @@ fun PickupCard(
 
         UpvoteDownvoteContainer(
             statistics = statistics,
-            vote = vote,
+            vote = reaction.vote,
             onVoteClick = onVoteClick,
         )
 
@@ -170,12 +168,12 @@ fun PickupCard(
 
 @Composable
 fun UpvoteDownvoteContainer(
-    statistics: PickupLine.Statistics?,
-    vote: PickupLine.Vote,
-    onVoteClick: (PickupLine.Vote) -> Unit,
+    statistics: PickupLineResponse.Statistics?,
+    vote: PickupLineResponse.Vote,
+    onVoteClick: (PickupLineResponse.Vote) -> Unit,
 ) {
-    val isFire = vote == PickupLine.Vote.UPVOTE
-    val isCold = vote == PickupLine.Vote.DOWNVOTE
+    val isFire = vote == PickupLineResponse.Vote.UPVOTE
+    val isCold = vote == PickupLineResponse.Vote.DOWNVOTE
 
     Surface(
         shape = RoundedCornerShape(8.dp),
@@ -191,7 +189,7 @@ fun UpvoteDownvoteContainer(
         ) {
             // Fire (upvote) button
             IconButton(
-                onClick = { onVoteClick(PickupLine.Vote.UPVOTE) },
+                onClick = { onVoteClick(PickupLineResponse.Vote.UPVOTE) },
                 modifier = Modifier.size(40.dp)
             ) {
                 val iconId = if (isFire) R.drawable.fire_color else R.drawable.fire_light
@@ -209,7 +207,7 @@ fun UpvoteDownvoteContainer(
 
             // Cold (downvote) button
             IconButton(
-                onClick = { onVoteClick(PickupLine.Vote.DOWNVOTE) },
+                onClick = { onVoteClick(PickupLineResponse.Vote.DOWNVOTE) },
                 modifier = Modifier.size(40.dp)
             ) {
                 val iconId =

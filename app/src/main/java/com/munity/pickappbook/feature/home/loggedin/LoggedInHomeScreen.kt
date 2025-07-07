@@ -19,8 +19,8 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.munity.pickappbook.core.data.model.PickupLine
-import com.munity.pickappbook.core.data.model.Tag
+import com.munity.pickappbook.core.data.remote.model.PickupLineResponse
+import com.munity.pickappbook.core.data.remote.model.TagResponse
 import com.munity.pickappbook.core.ui.components.PickupCard
 import com.munity.pickappbook.util.DateUtil
 
@@ -87,10 +87,10 @@ fun LoggedInHomeScreen(
 
 @Composable
 fun LazyPickupCards(
-    pickupLines: List<PickupLine>,
+    pickupLines: List<PickupLineResponse>,
     onStarredBtnClick: (Int) -> Unit,
-    onVoteClick: (Int, PickupLine.Vote) -> Unit,
-    onTagClick: (Tag) -> Unit,
+    onVoteClick: (Int, PickupLineResponse.Vote) -> Unit,
+    onTagClick: (TagResponse) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     LazyColumn(
@@ -110,7 +110,7 @@ fun LazyPickupCards(
                 titleLine = pickupLine.title,
                 line = pickupLine.content,
                 tags = pickupLine.tags,
-                reactions = pickupLine.reactions,
+                reaction = pickupLine.reaction,
                 statistics = pickupLine.statistics,
                 onStarredBtnClick = { onStarredBtnClick(index) },
                 onVoteClick = { vote -> onVoteClick(index, vote) },
