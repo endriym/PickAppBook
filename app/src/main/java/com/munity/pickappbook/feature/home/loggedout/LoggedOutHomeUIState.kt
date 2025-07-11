@@ -4,6 +4,8 @@ data class LoggedOutHomeUIState(
     val usernameLogin: String = "",
     val passwordLogin: String = "",
     val usernameCreate: String = "",
+    val isUsernameInvalid: Boolean = false,
+    val usernameCreateSupportingText: String = "",
     val displayNameCreate: String = "",
     val passwordCreate: String = "",
     val isLoading: Boolean = false,
@@ -15,6 +17,7 @@ data class LoggedOutHomeUIState(
 
         other as LoggedOutHomeUIState
 
+        if (isUsernameInvalid != other.isUsernameInvalid) return false
         if (isLoading != other.isLoading) return false
         if (usernameLogin != other.usernameLogin) return false
         if (passwordLogin != other.passwordLogin) return false
@@ -27,7 +30,8 @@ data class LoggedOutHomeUIState(
     }
 
     override fun hashCode(): Int {
-        var result = isLoading.hashCode()
+        var result = isUsernameInvalid.hashCode()
+        result = 31 * result + isLoading.hashCode()
         result = 31 * result + usernameLogin.hashCode()
         result = 31 * result + passwordLogin.hashCode()
         result = 31 * result + usernameCreate.hashCode()
@@ -36,4 +40,5 @@ data class LoggedOutHomeUIState(
         result = 31 * result + (imageByteArray?.contentHashCode() ?: 0)
         return result
     }
+
 }

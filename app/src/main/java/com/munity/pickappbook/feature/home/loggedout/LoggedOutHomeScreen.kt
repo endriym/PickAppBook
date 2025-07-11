@@ -17,6 +17,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.Cancel
@@ -42,6 +43,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.munity.pickappbook.core.ui.components.PasswordTextField
@@ -115,6 +117,8 @@ fun LoggedOutHomeScreen(
                 SelectedTab.SIGN_UP -> SignUpScreen(
                     usernameCreateTFValue = loggedOutHomeUiState.usernameCreate,
                     onUsernameCreateTFValue = loggedOutHomeVM::onUsernameCreateTFChange,
+                    isUsernameInvalid = loggedOutHomeUiState.isUsernameInvalid,
+                    usernameCreateSupportingText = loggedOutHomeUiState.usernameCreateSupportingText,
                     displayNameCreateTFValue = loggedOutHomeUiState.displayNameCreate,
                     onDisplayNameCreateTFValue = loggedOutHomeVM::onDisplayNameCreateTFChange,
                     passwordCreateTFValue = loggedOutHomeUiState.passwordCreate,
@@ -186,6 +190,8 @@ private fun LoginScreen(
 private fun SignUpScreen(
     usernameCreateTFValue: String,
     onUsernameCreateTFValue: (String) -> Unit,
+    isUsernameInvalid: Boolean,
+    usernameCreateSupportingText: String,
     displayNameCreateTFValue: String,
     onDisplayNameCreateTFValue: (String) -> Unit,
     passwordCreateTFValue: String,
@@ -254,9 +260,15 @@ private fun SignUpScreen(
         TextField(
             value = usernameCreateTFValue,
             onValueChange = onUsernameCreateTFValue,
-            placeholder = { Text(text = "Username") },
             label = { Text(text = "Username") },
+            placeholder = { Text(text = "user@example.com") },
+            isError = isUsernameInvalid,
+            supportingText = if (usernameCreateSupportingText.isNotEmpty()) {
+                { Text(text = usernameCreateSupportingText) }
+            } else
+                null,
             singleLine = true,
+            keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Email),
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(vertical = 8.dp, horizontal = 16.dp)
@@ -265,8 +277,8 @@ private fun SignUpScreen(
         TextField(
             value = displayNameCreateTFValue,
             onValueChange = onDisplayNameCreateTFValue,
-            placeholder = { Text(text = "Display name") },
             label = { Text(text = "Display name") },
+            placeholder = { Text(text = "JohnDoe The Rizzler") },
             singleLine = true,
             modifier = Modifier
                 .fillMaxWidth()
