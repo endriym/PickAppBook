@@ -65,7 +65,10 @@ private fun LazyPickupCards(
                 titleLine = pickupLine.title,
                 line = pickupLine.content,
                 tags = pickupLine.tags,
-                reaction = pickupLine.reaction,
+                reaction = pickupLine.reaction ?: PickupLineResponse.Reaction(
+                    isStarred = false,
+                    vote = PickupLineResponse.Vote.NONE
+                ),
                 statistics = pickupLine.statistics,
                 onStarredBtnClick = { onStarredBtnClick(index) },
                 onVoteClick = { vote -> onVoteClick(index, vote) },

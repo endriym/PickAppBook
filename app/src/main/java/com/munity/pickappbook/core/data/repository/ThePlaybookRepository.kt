@@ -196,7 +196,10 @@ class ThePlaybookRepository(
         pickupLines: SnapshotStateList<PickupLineResponse>,
     ): String {
         val oldReaction =
-            pickupLines[pickupLineIndex].reaction.copy()
+            pickupLines[pickupLineIndex].reaction?.copy() ?: PickupLineResponse.Reaction(
+                isStarred = false,
+                vote = PickupLineResponse.Vote.NONE
+            )
 
         val newReaction = oldReaction.copy(isStarred = !oldReaction.isStarred)
 
@@ -209,7 +212,10 @@ class ThePlaybookRepository(
         newVote: PickupLineResponse.Vote,
     ): String {
         val oldReaction =
-            pickupLines[pickupLineIndex].reaction.copy()
+            pickupLines[pickupLineIndex].reaction?.copy() ?: PickupLineResponse.Reaction(
+                isStarred = false,
+                vote = PickupLineResponse.Vote.NONE
+            )
         val oldStatistics =
             pickupLines[pickupLineIndex].statistics?.copy() ?: PickupLineResponse.Statistics(
                 0, 0, 0, 0.toFloat()

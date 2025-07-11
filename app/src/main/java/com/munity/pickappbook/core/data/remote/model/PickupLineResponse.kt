@@ -19,7 +19,7 @@ data class PickupLineResponse(
     val tags: List<TagResponse>? = null,
     @SerialName("visible") val isVisible: Boolean,
     val statistics: Statistics? = null,
-    val reaction: Reaction,
+    val reaction: Reaction? = null,
 ) {
     @Serializable
     data class Statistics(
