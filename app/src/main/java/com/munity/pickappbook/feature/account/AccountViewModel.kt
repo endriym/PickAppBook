@@ -44,10 +44,19 @@ class AccountViewModel(private val thePlaybookRepo: ThePlaybookRepository) : Vie
         initialValue = null
     )
 
+    val currentDisplayName: StateFlow<String?> = thePlaybookRepo.currentDisplayName.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(),
+        initialValue = null
+    )
+
     private val _personalPickupLines: SnapshotStateList<PickupLineResponse> =
         mutableStateListOf<PickupLineResponse>()
     val personalPickupLines: List<PickupLineResponse> = _personalPickupLines
 
+    private val _favoritePickupLines: SnapshotStateList<PickupLineResponse> =
+        mutableStateListOf<PickupLineResponse>()
+    val favoritePickupLines: List<PickupLineResponse> = _favoritePickupLines
 
     fun onPersonalPLRefresh() {
         viewModelScope.launch {
@@ -55,7 +64,7 @@ class AccountViewModel(private val thePlaybookRepo: ThePlaybookRepository) : Vie
                 oldState.copy(isPersonalRefreshing = true)
             }
 
-            val message = thePlaybookRepo.getPickupLineList(_personalPickupLines)
+            val message = thePlaybookRepo.getPersonalPickupLineList(_personalPickupLines)
             thePlaybookRepo.emitMessage(message)
 
             _accountUiState.update { oldState ->
@@ -82,23 +91,35 @@ class AccountViewModel(private val thePlaybookRepo: ThePlaybookRepository) : Vie
         }
     }
 
+    fun onFavoritePLVoteClick(pickupLineIndex: Int, newVote: PickupLineResponse.Vote) {
+        viewModelScope.launch {
+            val message = thePlaybookRepo.updateVote(
+                pickupLineIndex = pickupLineIndex,
+                pickupLines = _favoritePickupLines,
+                newVote = newVote
+            )
+
+            thePlaybookRepo.emitMessage(message)
+        }
+    }
+
     fun onFavoritePLStarredBtnClick(pickupLineIndex: Int) {
         viewModelScope.launch {
-            thePlaybookRepo.updateStarred(pickupLineIndex, _personalPickupLines)
+            thePlaybookRepo.updateStarred(pickupLineIndex, _favoritePickupLines)
         }
     }
 
     fun onFavoritePLRefresh() {
         viewModelScope.launch {
             _accountUiState.update { oldState ->
-                oldState.copy(isPersonalRefreshing = true)
+                oldState.copy(isFavoriteRefreshing = true)
             }
 
-            val message = thePlaybookRepo.getPickupLineList(_personalPickupLines)
+            val message = thePlaybookRepo.getFavoritePickupLineList(_favoritePickupLines)
             thePlaybookRepo.emitMessage(message)
 
             _accountUiState.update { oldState ->
-                oldState.copy(isPersonalRefreshing = false)
+                oldState.copy(isFavoriteRefreshing = false)
             }
         }
     }

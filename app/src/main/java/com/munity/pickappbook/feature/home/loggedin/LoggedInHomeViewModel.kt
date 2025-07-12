@@ -218,13 +218,12 @@ class LoggedInHomeViewModel(private val thePlaybookRepo: ThePlaybookRepository) 
         }
 
         viewModelScope.launch {
-            val result = _loggedInUiState.value.let {
+            val result = with(_loggedInUiState.value) {
                 thePlaybookRepo.createPickupLine(
-                    title = it.pickupLineTitleCreate,
-                    content = it.pickupLineContentCreate,
-                    tagIds = it.tagsToAdd.map { tag -> tag.id },
-                    isVisible = it.pickupLineVisibilityCreate,
-                    isStarred = false,
+                    title = pickupLineTitleCreate,
+                    content = pickupLineContentCreate,
+                    tagIds = tagsToAdd.map { tag -> tag.id },
+                    isVisible = pickupLineVisibilityCreate,
                 )
             }
 

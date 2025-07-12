@@ -40,10 +40,12 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil3.compose.AsyncImage
 import coil3.request.ImageRequest
 import coil3.request.crossfade
+import com.munity.pickappbook.core.data.remote.ThePlaybookEndpoints.USER_IMAGE_ENDPOINT
 import com.munity.pickappbook.core.ui.components.PullToRefreshLazyPickupCards
 
 private enum class SelectedTab(val index: Int) {
@@ -59,9 +61,9 @@ fun AccountScreen(
     var selectedTab by remember { mutableStateOf(SelectedTab.POSTS) }
     val isLoggedIn by accountVM.isLoggedIn.collectAsState()
     val currentUsername by accountVM.currentUsername.collectAsState()
+    val currentDisplayName by accountVM.currentDisplayName.collectAsState()
 
     if (isLoggedIn) {
-
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
             modifier = modifier.fillMaxSize()
@@ -69,7 +71,7 @@ fun AccountScreen(
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(top = 16.dp, bottom = 36.dp)
+                    .padding(top = 16.dp, bottom = 8.dp)
             ) {
                 Text(
                     text = "Profile",
@@ -92,7 +94,7 @@ fun AccountScreen(
 
             AsyncImage(
                 model = ImageRequest.Builder(LocalContext.current)
-                    .data("/images/$currentUsername.jpeg")
+                    .data(USER_IMAGE_ENDPOINT.format(currentUsername))
                     .crossfade(true)
                     .build(),
                 placeholder = rememberVectorPainter(Icons.Default.AccountCircle),
@@ -105,10 +107,17 @@ fun AccountScreen(
             )
 
             Text(
-                text = currentUsername ?: "No username found",
+                text = currentDisplayName ?: "No display name found",
                 style = MaterialTheme.typography.titleLarge,
+                fontSize = 25.sp,
                 fontWeight = FontWeight.Bold,
-                modifier = Modifier.padding(top = 16.dp, bottom = 24.dp)
+                modifier = Modifier.padding(top = 12.dp)
+            )
+
+            Text(
+                text = currentUsername ?: "No username found",
+                style = MaterialTheme.typography.titleMedium,
+                modifier = Modifier.padding(top = 4.dp, bottom = 24.dp)
             )
 
             AccountPrimaryTabRow(
@@ -129,7 +138,15 @@ fun AccountScreen(
                     modifier = modifier.fillMaxSize()
                 )
 
-                SelectedTab.FAVORITES -> FavoritesScreenSection(modifier)
+                SelectedTab.FAVORITES -> PullToRefreshLazyPickupCards(
+                    isRefreshing = accountUiState.isFavoriteRefreshing,
+                    onRefresh = accountVM::onFavoritePLRefresh,
+                    pickupLines = accountVM.favoritePickupLines,
+                    onStarredBtnClick = accountVM::onFavoritePLStarredBtnClick,
+                    onVoteClick = accountVM::onFavoritePLVoteClick,
+                    onTagClick = { /*TODO()*/ },
+                    modifier = modifier.fillMaxSize(),
+                )
             }
         }
     } else {
