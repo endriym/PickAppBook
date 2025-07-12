@@ -1,5 +1,6 @@
 package com.munity.pickappbook.core.data.remote.model
 
+import com.munity.pickappbook.core.data.remote.ThePlaybookEndpoints.USER_IMAGE_ENDPOINT
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -46,5 +47,5 @@ data class PickupLineResponse(
     }
 
     val userJpegImageUrl: String
-        get() = "/images/$username.jpeg"
+        get() = USER_IMAGE_ENDPOINT.format(username)
 }

@@ -4,6 +4,7 @@ import androidx.compose.runtime.snapshots.SnapshotStateList
 import com.munity.pickappbook.core.data.local.datastore.PreferencesStorage
 import com.munity.pickappbook.core.data.remote.ThePlaybookApi
 import com.munity.pickappbook.core.data.remote.model.ErrorResponse
+import com.munity.pickappbook.core.data.remote.model.GetPickupLineListRequest
 import com.munity.pickappbook.core.data.remote.model.PickupLineResponse
 import com.munity.pickappbook.core.data.remote.model.TagResponse
 import com.munity.pickappbook.core.data.remote.model.UserResponse
@@ -38,6 +39,10 @@ class ThePlaybookRepository(
 
     val currentUsername: Flow<String?> = pickAppPrefsDS.storedPreferences.map { storedPrefs ->
         storedPrefs.username
+    }
+
+    val currentDisplayName: Flow<String?> = pickAppPrefsDS.storedPreferences.map { storedPrefs ->
+        storedPrefs.displayName
     }
 
     private val _messages = MutableSharedFlow<String?>()
@@ -128,13 +133,11 @@ class ThePlaybookRepository(
         content: String,
         tagIds: List<String>,
         isVisible: Boolean,
-        isStarred: Boolean = false,
     ): Result<String> {
         val result = thePlaybookApi.createPickupLine(
             title = title,
             content = content,
             visible = isVisible,
-            starred = isStarred,
             tagIds = tagIds
         )
 
@@ -233,11 +236,14 @@ class ThePlaybookRepository(
 
     suspend fun getPickupLineList(
         pickupLines: SnapshotStateList<PickupLineResponse>,
-        page: Int? = null,
         title: String? = null,
-        tagIds: List<String>? = null,
-        visibility: Boolean? = null,
         content: String? = null,
+        starred: Boolean? = null,
+        tagIds: List<String>? = null,
+        isVisible: GetPickupLineListRequest.Visibility? = null,
+        successPercentage: Double? = null,
+        userId: String? = null,
+        page: Int? = null,
     ): String? {
         var message: String? = null
 
@@ -251,13 +257,48 @@ class ThePlaybookRepository(
         return message
     }
 
+    suspend fun getFavoritePickupLineList(
+        pickupLines: SnapshotStateList<PickupLineResponse>,
+    ): String? {
+        var message: String? = null
+
+        val result = thePlaybookApi.getPickupLineList(starred = true).map { it.pickupLines }
+
+        when {
+            result.isSuccess -> pickupLines.swapList(result.getOrNull()!!)
+            else -> message = result.exceptionOrNull()!!.message
+        }
+
+        return message
+    }
+
+    suspend fun getPersonalPickupLineList(
+        pickupLines: SnapshotStateList<PickupLineResponse>,
+    ): String? {
+        var message: String? = null
+
+        val userInfo = thePlaybookApi.getUserInfo()
+        val result = thePlaybookApi.getPickupLineList(userId = userInfo.getOrNull()!!.id)
+            .map { it.pickupLines }
+
+        when {
+            result.isSuccess -> pickupLines.swapList(result.getOrNull()!!)
+            else -> message = result.exceptionOrNull()!!.message
+        }
+
+        return message
+    }
+
     suspend fun getPickupLineFeed(
         pickupLines: SnapshotStateList<PickupLineResponse>,
-        page: Int? = null,
         title: String? = null,
-        tagIds: List<String>? = null,
-        visibility: Boolean? = null,
         content: String? = null,
+        starred: Boolean? = null,
+        tagIds: List<String>? = null,
+        isVisible: GetPickupLineListRequest.Visibility? = null,
+        successPercentage: Double? = null,
+        userId: String? = null,
+        page: Int? = null,
     ): String? {
         var message: String? = null
 

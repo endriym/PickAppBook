@@ -258,15 +258,13 @@ class ThePlaybookApi(
         title: String,
         content: String,
         visible: Boolean,
-        starred: Boolean,
         tagIds: List<String>,
     ): Result<PickupLineResponse> {
         val createPickupLineRequest = CreatePickupLineRequest(
             title = title,
             content = content,
             visible = visible,
-            starred = starred,
-            tagIds = tagIds
+            tagIds = tagIds.map { CreatePickupLineRequest.TagId(it) }
         )
 
         val httpRequestBuilder = HttpRequestBuilder().apply {
@@ -405,7 +403,7 @@ class ThePlaybookApi(
             method = HttpMethod.Get
             url(PICKUP_LINES_ENDPOINT)
             url {
-                getPickupLineListRequest.getUrlParameters()
+                getPickupLineListRequest.appendUrlParameters(parameters)
             }
         }
 

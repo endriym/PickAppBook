@@ -12,18 +12,19 @@ data class GetPickupLineListRequest(
     val userId: String? = null,
     val page: Int? = null,
 ) {
-    fun getUrlParameters(): ParametersBuilder = ParametersBuilder().apply {
-        title?.let { append("title", title) }
-        content?.let { append("content", content) }
-        starred?.let { append("starred", starred.toString()) }
-        tagIds?.forEach { tagId ->
-            append("tags[]", tagId)
+    fun appendUrlParameters(parametersBuilder: ParametersBuilder) =
+        with(parametersBuilder) {
+            title?.let { append("title", title) }
+            content?.let { append("content", content) }
+            starred?.let { append("starred", starred.toString()) }
+            tagIds?.forEach { tagId ->
+                append("tags[]", tagId)
+            }
+            isVisible?.let { append("visibility", isVisible.toString()) }
+            successPercentage?.let { append("success_percentage", successPercentage.toString()) }
+            userId?.let { append("user_id", userId) }
+            page?.let { append("page", page.toString()) }
         }
-        isVisible?.let { append("visibility", isVisible.toString()) }
-        successPercentage?.let { append("success_percentage", successPercentage.toString()) }
-        userId?.let { append("user_id", userId) }
-        page?.let { append("page", page.toString()) }
-    }
 
     enum class Visibility {
         NOT_VISIBLE, VISIBLE, ALL,
