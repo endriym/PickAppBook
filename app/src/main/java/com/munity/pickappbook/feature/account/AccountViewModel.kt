@@ -8,8 +8,8 @@ import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import com.munity.pickappbook.PickAppBookApplication
-import com.munity.pickappbook.core.data.remote.model.PickupLineResponse
 import com.munity.pickappbook.core.data.repository.ThePlaybookRepository
+import com.munity.pickappbook.core.model.PickupLine
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -50,13 +50,13 @@ class AccountViewModel(private val thePlaybookRepo: ThePlaybookRepository) : Vie
         initialValue = null
     )
 
-    private val _personalPickupLines: SnapshotStateList<PickupLineResponse> =
-        mutableStateListOf<PickupLineResponse>()
-    val personalPickupLines: List<PickupLineResponse> = _personalPickupLines
+    private val _personalPickupLines: SnapshotStateList<PickupLine> =
+        mutableStateListOf<PickupLine>()
+    val personalPickupLines: List<PickupLine> = _personalPickupLines
 
-    private val _favoritePickupLines: SnapshotStateList<PickupLineResponse> =
-        mutableStateListOf<PickupLineResponse>()
-    val favoritePickupLines: List<PickupLineResponse> = _favoritePickupLines
+    private val _favoritePickupLines: SnapshotStateList<PickupLine> =
+        mutableStateListOf<PickupLine>()
+    val favoritePickupLines: List<PickupLine> = _favoritePickupLines
 
     fun onPersonalPLRefresh() {
         viewModelScope.launch {
@@ -79,7 +79,7 @@ class AccountViewModel(private val thePlaybookRepo: ThePlaybookRepository) : Vie
         }
     }
 
-    fun onPersonalPLVoteClick(pickupLineIndex: Int, newVote: PickupLineResponse.Vote) {
+    fun onPersonalPLVoteClick(pickupLineIndex: Int, newVote: PickupLine.Reaction.Vote) {
         viewModelScope.launch {
             val message = thePlaybookRepo.updateVote(
                 pickupLineIndex = pickupLineIndex,
@@ -91,7 +91,7 @@ class AccountViewModel(private val thePlaybookRepo: ThePlaybookRepository) : Vie
         }
     }
 
-    fun onFavoritePLVoteClick(pickupLineIndex: Int, newVote: PickupLineResponse.Vote) {
+    fun onFavoritePLVoteClick(pickupLineIndex: Int, newVote: PickupLine.Reaction.Vote) {
         viewModelScope.launch {
             val message = thePlaybookRepo.updateVote(
                 pickupLineIndex = pickupLineIndex,

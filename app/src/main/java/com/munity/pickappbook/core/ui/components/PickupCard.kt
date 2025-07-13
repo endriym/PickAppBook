@@ -46,8 +46,8 @@ import coil3.compose.AsyncImage
 import coil3.request.ImageRequest
 import coil3.request.crossfade
 import com.munity.pickappbook.R
-import com.munity.pickappbook.core.data.remote.model.PickupLineResponse
-import com.munity.pickappbook.core.data.remote.model.TagResponse
+import com.munity.pickappbook.core.model.PickupLine
+import com.munity.pickappbook.core.model.Tag
 
 @Composable
 fun PickupCard(
@@ -56,12 +56,12 @@ fun PickupCard(
     postDate: String,
     titleLine: String,
     line: String,
-    reaction: PickupLineResponse.Reaction,
+    reaction: PickupLine.Reaction,
     onStarredBtnClick: () -> Unit,
-    statistics: PickupLineResponse.Statistics?,
-    onVoteClick: (PickupLineResponse.Vote) -> Unit,
-    tags: List<TagResponse>?,
-    onTagClick: (TagResponse) -> Unit,
+    statistics: PickupLine.Statistics?,
+    onVoteClick: (PickupLine.Reaction.Vote) -> Unit,
+    tags: List<Tag>?,
+    onTagClick: (Tag) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     var expanded by remember { mutableStateOf(false) }
@@ -170,12 +170,12 @@ fun PickupCard(
 
 @Composable
 fun UpvoteDownvoteContainer(
-    statistics: PickupLineResponse.Statistics?,
-    vote: PickupLineResponse.Vote,
-    onVoteClick: (PickupLineResponse.Vote) -> Unit,
+    statistics: PickupLine.Statistics?,
+    vote: PickupLine.Reaction.Vote,
+    onVoteClick: (PickupLine.Reaction.Vote) -> Unit,
 ) {
-    val isFire = vote == PickupLineResponse.Vote.UPVOTE
-    val isCold = vote == PickupLineResponse.Vote.DOWNVOTE
+    val isFire = vote == PickupLine.Reaction.Vote.UPVOTE
+    val isCold = vote == PickupLine.Reaction.Vote.DOWNVOTE
 
     Surface(
         shape = RoundedCornerShape(8.dp),
@@ -191,7 +191,7 @@ fun UpvoteDownvoteContainer(
         ) {
             // Fire (upvote) button
             IconButton(
-                onClick = { onVoteClick(PickupLineResponse.Vote.UPVOTE) },
+                onClick = { onVoteClick(PickupLine.Reaction.Vote.UPVOTE) },
                 modifier = Modifier.size(40.dp)
             ) {
                 val iconId = if (isFire) R.drawable.fire_color else R.drawable.fire_light
@@ -208,7 +208,7 @@ fun UpvoteDownvoteContainer(
 
             // Cold (downvote) button
             IconButton(
-                onClick = { onVoteClick(PickupLineResponse.Vote.DOWNVOTE) },
+                onClick = { onVoteClick(PickupLine.Reaction.Vote.DOWNVOTE) },
                 modifier = Modifier.size(40.dp)
             ) {
                 val iconId =

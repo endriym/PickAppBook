@@ -14,8 +14,10 @@ import com.munity.pickappbook.core.data.remote.model.ErrorResponse
 import com.munity.pickappbook.core.data.remote.model.GetPickupLineListRequest
 import com.munity.pickappbook.core.data.remote.model.PickupLineListResponse
 import com.munity.pickappbook.core.data.remote.model.PickupLineResponse
+import com.munity.pickappbook.core.data.remote.model.TagId
 import com.munity.pickappbook.core.data.remote.model.TagResponse
 import com.munity.pickappbook.core.data.remote.model.TokenResponse
+import com.munity.pickappbook.core.data.remote.model.UpdatePickupLineRequest
 import com.munity.pickappbook.core.data.remote.model.UserInfoResponse
 import com.munity.pickappbook.core.data.remote.model.UserResponse
 import io.ktor.client.HttpClient
@@ -47,18 +49,33 @@ class ThePlaybookApi(
     /**
      * Creates a new user.
      *
-     * @param user The user to be created
+     * @param username The desired username for the new account
+     * @param displayName The desired display name for the new account
+     * @param password The desired password for the new account
+     * @param image The base 64 encoded string image for the new account
      *
      * @return A [Result.success] containing the [UserInfoResponse] of the
      * new created user if the operation succeeds,
      * or a [Result.failure] containing an [ErrorResponse] if it fails.
      */
-    suspend fun createUser(user: UserResponse): Result<UserInfoResponse> {
+    suspend fun createUser(
+        username: String,
+        displayName: String,
+        password: String,
+        image: String,
+    ): Result<UserInfoResponse> {
         val httpRequestBuilder = HttpRequestBuilder().apply {
             method = HttpMethod.Post
             url(CREATE_USER_ENDPOINT)
             contentType(ContentType.Application.Json)
-            setBody(user)
+            setBody(
+                UserResponse(
+                    username = username,
+                    displayName = displayName,
+                    password = password,
+                    image = image
+                )
+            )
         }
 
         return checkReturnResult(httpRequestBuilder) { responseToTransform ->
@@ -187,20 +204,25 @@ class ThePlaybookApi(
     /**
      * Updates an existing tag with new tag info.
      *
-     * @param newTag [TagResponse] object with a possible new [TagResponse.name] and/or [TagResponse.description].
-     * `newTag` contains the [TagResponse.id] to identify the correct tag.
+     * @param tagId The unique identifier of the tag to be updated.
+     * @param tagName The new name for the tag. If no change is desired, provide the current name.
+     * @param tagDescription The new description for the tag. If no change is desired, provide the current description.
      *
      * @return A [Result.success] containing the updated [TagResponse] if the operation succeeds,
      * or a [Result.failure] containing an [ErrorResponse] if it fails.
      */
-    suspend fun updateTag(newTag: TagResponse): Result<TagResponse> {
+    suspend fun updateTag(
+        tagId: String,
+        tagName: String,
+        tagDescription: String,
+    ): Result<TagResponse> {
         val httpRequestBuilder = HttpRequestBuilder().apply {
             method = HttpMethod.Put
-            url(TAGS_ENDPOINT + newTag.id)
+            url(TAGS_ENDPOINT + tagId)
             contentType(ContentType.Application.Json)
             setBody(buildJsonObject {
-                put("name", newTag.name)
-                put("description", newTag.description)
+                put("name", tagName)
+                put("description", tagDescription)
             })
         }
 
@@ -264,7 +286,7 @@ class ThePlaybookApi(
             title = title,
             content = content,
             visible = visible,
-            tagIds = tagIds.map { CreatePickupLineRequest.TagId(it) }
+            tagIds = tagIds.map { TagId(it) }
         )
 
         val httpRequestBuilder = HttpRequestBuilder().apply {
@@ -282,17 +304,32 @@ class ThePlaybookApi(
     /**
      * Updates an existing pickup line with new tag info.
      *
-     * @param updatedPickupLine [PickupLineResponse] object with a possible new [PickupLineResponse.content],
-     * [PickupLineResponse.title], [PickupLineResponse.isVisible] property and/or [PickupLineResponse.tags].
-     * `pickupLine` contains the [PickupLineResponse.id] to identify the correct pickup line.
+     * @param pickupLineId The unique identifier of the pickup line to be updated.
+     * @param title The new title for the pickup line. If no change is desired, provide the current title.
+     * @param content The new content for the pickup line. If no change is desired, provide the current content.
+     * @param tagIds The new tags for the pickup line. If no change is desired, provide the current tags.
+     * @param isVisible The new visibility for the pickup line. If no change is desired, provide the current visibility.
      *
      * @return A [Result.success] containing the updated [PickupLineResponse] if the operation succeeds,
      * or a [Result.failure] containing an [ErrorResponse] if it fails.
      */
-    suspend fun updatePickupLine(updatedPickupLine: PickupLineResponse): Result<PickupLineResponse> {
+    suspend fun updatePickupLine(
+        pickupLineId: String,
+        title: String,
+        content: String,
+        tagIds: List<String>?,
+        isVisible: Boolean,
+    ): Result<PickupLineResponse> {
+        val updatedPickupLine = UpdatePickupLineRequest(
+            title = title,
+            content = content,
+            tags = tagIds?.map { TagId(it) },
+            isVisible = isVisible
+        )
+
         val httpRequestBuilder = HttpRequestBuilder().apply {
             method = HttpMethod.Put
-            url("$PICKUP_LINES_ENDPOINT/${updatedPickupLine.id}")
+            url("$PICKUP_LINES_ENDPOINT/${pickupLineId}")
             contentType(ContentType.Application.Json)
             setBody(updatedPickupLine)
         }

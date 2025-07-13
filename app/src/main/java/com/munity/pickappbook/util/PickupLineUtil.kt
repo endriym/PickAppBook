@@ -1,44 +1,44 @@
 package com.munity.pickappbook.util
 
-import com.munity.pickappbook.core.data.remote.model.PickupLineResponse
+import com.munity.pickappbook.core.model.PickupLine
 
 object PickupLineUtil {
     /**
      * The values are pairs:
      *
-     * - the first component is the resulting [PickupLineResponse.Vote] object from the sum of
-     * the pair of [PickupLineResponse.Vote]s used as a key;
+     * - the first component is the resulting [PickupLine.Reaction.Vote] object from the sum of
+     * the pair of [PickupLine.Reaction.Vote]s used as a key;
      *
-     * - the second component is a triple with the following fields: `(nTries, nSuccesses, nFailures)`.
+     * - the second component is a pair with the following fields: `(nSuccesses, nFailures)`.
      * These integers have to be added to the old statistics instance in order to calculate
      * the new statistics instance.
      */
     private val statisticsMapCalculator =
-        mapOf<Pair<PickupLineResponse.Vote, PickupLineResponse.Vote>, Pair<PickupLineResponse.Vote, Triple<Int, Int, Int>>>(
+        mapOf<Pair<PickupLine.Reaction.Vote, PickupLine.Reaction.Vote>, Pair<PickupLine.Reaction.Vote, Pair<Int, Int>>>(
             // Upvote
-            Pair(PickupLineResponse.Vote.NONE, PickupLineResponse.Vote.UPVOTE) to Pair(
-                PickupLineResponse.Vote.UPVOTE, Triple(1, 1, 0)
+            Pair(PickupLine.Reaction.Vote.NONE, PickupLine.Reaction.Vote.UPVOTE) to Pair(
+                PickupLine.Reaction.Vote.UPVOTE, Pair(1, 0)
             ),
-            Pair(PickupLineResponse.Vote.UPVOTE, PickupLineResponse.Vote.UPVOTE) to Pair(
-                PickupLineResponse.Vote.NONE, Triple(-1, -1, 0)
+            Pair(PickupLine.Reaction.Vote.UPVOTE, PickupLine.Reaction.Vote.UPVOTE) to Pair(
+                PickupLine.Reaction.Vote.NONE, Pair(-1, 0)
             ),
-            Pair(PickupLineResponse.Vote.DOWNVOTE, PickupLineResponse.Vote.UPVOTE) to Pair(
-                PickupLineResponse.Vote.UPVOTE, Triple(0, 1, -1)
+            Pair(PickupLine.Reaction.Vote.DOWNVOTE, PickupLine.Reaction.Vote.UPVOTE) to Pair(
+                PickupLine.Reaction.Vote.UPVOTE, Pair(1, -1)
             ),
 
             // Downvote
-            Pair(PickupLineResponse.Vote.NONE, PickupLineResponse.Vote.DOWNVOTE) to Pair(
-                PickupLineResponse.Vote.DOWNVOTE, Triple(1, 0, 1)
+            Pair(PickupLine.Reaction.Vote.NONE, PickupLine.Reaction.Vote.DOWNVOTE) to Pair(
+                PickupLine.Reaction.Vote.DOWNVOTE, Pair(0, 1)
             ),
-            Pair(PickupLineResponse.Vote.UPVOTE, PickupLineResponse.Vote.DOWNVOTE) to Pair(
-                PickupLineResponse.Vote.DOWNVOTE, Triple(0, -1, 1)
+            Pair(PickupLine.Reaction.Vote.UPVOTE, PickupLine.Reaction.Vote.DOWNVOTE) to Pair(
+                PickupLine.Reaction.Vote.DOWNVOTE, Pair(-1, 1)
             ),
-            Pair(PickupLineResponse.Vote.DOWNVOTE, PickupLineResponse.Vote.DOWNVOTE) to Pair(
-                PickupLineResponse.Vote.NONE, Triple(-1, 0, -1)
+            Pair(PickupLine.Reaction.Vote.DOWNVOTE, PickupLine.Reaction.Vote.DOWNVOTE) to Pair(
+                PickupLine.Reaction.Vote.NONE, Pair(0, -1)
             ),
         )
 
-    fun PickupLineResponse.Vote.plus(other: PickupLineResponse.Vote): Pair<PickupLineResponse.Vote, Triple<Int, Int, Int>> =
+    fun PickupLine.Reaction.Vote.plus(other: PickupLine.Reaction.Vote): Pair<PickupLine.Reaction.Vote, Pair<Int, Int>> =
         statisticsMapCalculator[Pair(this, other)]
             ?: throw IllegalArgumentException("The other vote can't be 'NONE'")
 }

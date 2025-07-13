@@ -18,8 +18,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import com.munity.pickappbook.core.data.remote.model.PickupLineResponse
-import com.munity.pickappbook.core.data.remote.model.TagResponse
+import com.munity.pickappbook.core.model.PickupLine
+import com.munity.pickappbook.core.model.Tag
 import com.munity.pickappbook.util.DateUtil
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -27,10 +27,10 @@ import com.munity.pickappbook.util.DateUtil
 fun PullToRefreshLazyPickupCards(
     isRefreshing: Boolean,
     onRefresh: () -> Unit,
-    pickupLines: List<PickupLineResponse>,
+    pickupLines: List<PickupLine>,
     onStarredBtnClick: (Int) -> Unit,
-    onVoteClick: (Int, PickupLineResponse.Vote) -> Unit,
-    onTagClick: (TagResponse) -> Unit,
+    onVoteClick: (Int, PickupLine.Reaction.Vote) -> Unit,
+    onTagClick: (Tag) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     PullToRefreshBox(
@@ -50,10 +50,10 @@ fun PullToRefreshLazyPickupCards(
 
 @Composable
 private fun LazyPickupCards(
-    pickupLines: List<PickupLineResponse>,
+    pickupLines: List<PickupLine>,
     onStarredBtnClick: (Int) -> Unit,
-    onVoteClick: (Int, PickupLineResponse.Vote) -> Unit,
-    onTagClick: (TagResponse) -> Unit,
+    onVoteClick: (Int, PickupLine.Reaction.Vote) -> Unit,
+    onTagClick: (Tag) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     if (pickupLines.isNotEmpty()) {
@@ -68,16 +68,13 @@ private fun LazyPickupCards(
                 }) { index, pickupLine ->
 
                 PickupCard(
-                    authorImageUrl = pickupLine.userJpegImageUrl,
-                    author = pickupLine.username,
-                    postDate = DateUtil.iso8601ToTimeAgo(pickupLine.updatedAt),
+                    authorImageUrl = pickupLine.author.profilePictureUrl,
+                    author = pickupLine.author.username,
+                    postDate = DateUtil.instantToTimeAgo(pickupLine.updatedAt),
                     titleLine = pickupLine.title,
                     line = pickupLine.content,
                     tags = pickupLine.tags,
-                    reaction = pickupLine.reaction ?: PickupLineResponse.Reaction(
-                        isStarred = false,
-                        vote = PickupLineResponse.Vote.NONE
-                    ),
+                    reaction = pickupLine.reaction,
                     statistics = pickupLine.statistics,
                     onStarredBtnClick = { onStarredBtnClick(index) },
                     onVoteClick = { vote -> onVoteClick(index, vote) },

@@ -4,9 +4,9 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class CreatePickupLineRequest(
+data class UpdatePickupLineRequest(
     val title: String,
     val content: String,
-    val visible: Boolean,
-    @SerialName("tags") val tagIds: List<TagId>,
+    val tags: List<TagId>?,
+    @SerialName("visible") val isVisible: Boolean,
 )

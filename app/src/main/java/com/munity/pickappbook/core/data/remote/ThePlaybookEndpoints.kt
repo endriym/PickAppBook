@@ -12,4 +12,6 @@ public object ThePlaybookEndpoints {
     const val PICKUP_LINES_ENDPOINT = "$BASE_URL/pickup-lines"
     const val PICKUP_LINES_FEED_ENDPOINT = "$PICKUP_LINES_ENDPOINT/feed"
     const val REACTION_ENDPOINT = "$BASE_URL/pickup-lines/%s/reaction"
+
+    fun userImageUrl(username: String) = USER_IMAGE_ENDPOINT.format(username)
 }
