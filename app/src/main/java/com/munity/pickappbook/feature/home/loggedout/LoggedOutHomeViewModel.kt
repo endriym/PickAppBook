@@ -125,7 +125,7 @@ class LoggedOutHomeViewModel(private val thePlaybookRepo: ThePlaybookRepository)
                 if (!StringsUtil.isValidUsername(usernameCreate))
                     return@with "Please enter a valid username"
 
-                if (Regex("""\s*""").containsMatchIn(passwordCreate))
+                if (passwordCreate.isBlank() || Regex("""\s+""").containsMatchIn(passwordCreate))
                     return@with "Please enter a valid password: it cannot be blank or contain any spaces"
 
                 // Disable 'Login' and 'Sign Up' button, make the progress indicator visible
