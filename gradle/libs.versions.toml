@@ -37,6 +37,7 @@ androidx-lifecycle-viewmodel-compose = { group = "androidx.lifecycle", name = "l
 androidx-datastore = { group = "androidx.datastore", name = "datastore-preferences", version.ref = "dataStore" }
 androidx-room-runtime = { group = "androidx.room", name = "room-runtime", version.ref = "room" }
 androidx-room-compiler = { group = "androidx.room", name = "room-compiler", version.ref = "room" }
+androidx-room-ktx = { group = "androidx.room", name = "room-ktx", version = "room" }
 androidx-navigation-compose = { group = "androidx.navigation", name = "navigation-compose", version.ref = "navigationCompose" }
 ktor-client-core = { group = "io.ktor", name = "ktor-client-core", version.ref = "ktorCore" }
 ktor-client-cio = { group = "io.ktor", name = "ktor-client-cio", version.ref = "ktorCore" }
