@@ -3,6 +3,7 @@ package com.munity.pickappbook.core.data.repository
 import com.munity.pickappbook.core.data.remote.ThePlaybookEndpoints
 import com.munity.pickappbook.core.data.remote.model.PickupLineResponse
 import com.munity.pickappbook.core.data.remote.model.TagResponse
+import com.munity.pickappbook.core.data.remote.model.UserResponse
 import com.munity.pickappbook.core.model.PickupLine
 import com.munity.pickappbook.core.model.Tag
 import com.munity.pickappbook.core.model.User
@@ -15,9 +16,11 @@ fun PickupLine.asNetworkModel(): PickupLineResponse =
         id = this.id,
         title = this.title,
         content = this.content,
-        userId = this.author.id,
-        username = this.author.username,
-        displayName = this.author.displayName,
+        user = UserResponse(
+            id = this.author.id,
+            username = this.author.username,
+            displayName = this.author.displayName
+        ),
         updatedAt = this.updatedAt.toString(),
         tags = this.tags?.asNetworkTagsModel(),
         isVisible = this.isVisible,
@@ -36,35 +39,35 @@ fun PickupLine.Statistics.asNetworkModel(): PickupLineResponse.Statistics =
         successPercentage = this.successPercentage
     )
 
-fun PickupLineResponse.Vote.asExternalModel(): PickupLine.Reaction.Vote =
+fun PickupLineResponse.Reaction.Vote.asExternalModel(): PickupLine.Reaction.Vote =
     when (this) {
-        PickupLineResponse.Vote.DOWNVOTE -> PickupLine.Reaction.Vote.DOWNVOTE
-        PickupLineResponse.Vote.NONE -> PickupLine.Reaction.Vote.NONE
-        PickupLineResponse.Vote.UPVOTE -> PickupLine.Reaction.Vote.UPVOTE
+        PickupLineResponse.Reaction.Vote.DOWNVOTE -> PickupLine.Reaction.Vote.DOWNVOTE
+        PickupLineResponse.Reaction.Vote.NONE -> PickupLine.Reaction.Vote.NONE
+        PickupLineResponse.Reaction.Vote.UPVOTE -> PickupLine.Reaction.Vote.UPVOTE
     }
 
-fun PickupLine.Reaction.Vote.asNetworkModel(): PickupLineResponse.Vote =
+fun PickupLine.Reaction.Vote.asNetworkModel(): PickupLineResponse.Reaction.Vote =
     when (this) {
-        PickupLine.Reaction.Vote.DOWNVOTE -> PickupLineResponse.Vote.DOWNVOTE
-        PickupLine.Reaction.Vote.NONE -> PickupLineResponse.Vote.NONE
-        PickupLine.Reaction.Vote.UPVOTE -> PickupLineResponse.Vote.UPVOTE
+        PickupLine.Reaction.Vote.DOWNVOTE -> PickupLineResponse.Reaction.Vote.DOWNVOTE
+        PickupLine.Reaction.Vote.NONE -> PickupLineResponse.Reaction.Vote.NONE
+        PickupLine.Reaction.Vote.UPVOTE -> PickupLineResponse.Reaction.Vote.UPVOTE
     }
 
 fun PickupLineResponse.Reaction.asExternalModel(): PickupLine.Reaction =
-    PickupLine.Reaction(isStarred = this.isStarred, vote = this.vote.asExternalModel())
+    PickupLine.Reaction(isFavorite = this.isStarred, vote = this.vote.asExternalModel())
 
 fun PickupLine.Reaction.asNetworkModel(): PickupLineResponse.Reaction =
-    PickupLineResponse.Reaction(isStarred = this.isStarred, vote = this.vote.asNetworkModel())
+    PickupLineResponse.Reaction(isStarred = this.isFavorite, vote = this.vote.asNetworkModel())
 
 fun PickupLineResponse.asExternalModel(): PickupLine = PickupLine(
     id = this.id,
     title = this.title,
     content = this.content,
     author = User(
-        id = this.userId,
-        username = this.username,
-        displayName = this.displayName,
-        profilePictureUrl = ThePlaybookEndpoints.userImageUrl(this.username)
+        id = this.user.id,
+        username = this.user.username,
+        displayName = this.user.displayName,
+        profilePictureUrl = ThePlaybookEndpoints.userImageUrl(this.user.username)
     ),
     updatedAt = DateUtil.iso8601ToInstant(this.updatedAt),
     tags = this.tags.asExternalTagsModel(),
