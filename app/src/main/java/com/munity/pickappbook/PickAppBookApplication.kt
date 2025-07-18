@@ -5,6 +5,7 @@ import android.content.Context
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.preferencesDataStore
+import com.munity.pickappbook.core.data.local.database.PickAppDatabase
 import com.munity.pickappbook.core.data.local.datastore.PickAppPreferencesDataSource
 import com.munity.pickappbook.core.data.remote.ThePlaybookApi
 import com.munity.pickappbook.core.data.repository.ThePlaybookRepository
@@ -33,7 +34,8 @@ class PickAppBookApplication : Application() {
         thePlaybookRepository = ThePlaybookRepository(
             parentScope = applicationCoroutineScope,
             pickAppPrefsDS = pickAppPreferencesDataSource,
-            thePlaybookApi = thePlaybookApi
+            roomDatabase = PickAppDatabase.getDatabase(applicationContext),
+            thePlaybookApi = thePlaybookApi,
         )
     }
 
