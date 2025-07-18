@@ -11,7 +11,7 @@ import kotlinx.serialization.Serializable
  * @param image the base 64 encoded string image for the new account
  */
 @Serializable
-data class UserResponse(
+data class UserRequest(
     val username: String,
     @SerialName("display_name") val displayName: String,
     val password: String,

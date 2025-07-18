@@ -1,10 +1,22 @@
 package com.munity.pickappbook.core.data.repository
 
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.snapshots.SnapshotStateList
+import androidx.room.withTransaction
+import com.munity.pickappbook.core.data.local.database.PickAppDatabase
+import com.munity.pickappbook.core.data.local.database.dao.FavoritePickupLineWithTagsDao
+import com.munity.pickappbook.core.data.local.database.dao.FeedPickupLineWithTagsDao
+import com.munity.pickappbook.core.data.local.database.dao.PersonalPickupLineWithTagsDao
+import com.munity.pickappbook.core.data.local.database.dao.PickupLineDao
+import com.munity.pickappbook.core.data.local.database.dao.TagDao
+import com.munity.pickappbook.core.data.local.database.entity.FavoritePLTagCrossRefEntity
+import com.munity.pickappbook.core.data.local.database.entity.FeedPLTagCrossRefEntity
+import com.munity.pickappbook.core.data.local.database.entity.PersonalPLTagCrossRefEntity
 import com.munity.pickappbook.core.data.local.datastore.PreferencesStorage
 import com.munity.pickappbook.core.data.remote.ThePlaybookApi
 import com.munity.pickappbook.core.data.remote.model.ErrorResponse
 import com.munity.pickappbook.core.data.remote.model.GetPickupLineListRequest
+import com.munity.pickappbook.core.data.remote.model.PickupLineResponse
 import com.munity.pickappbook.core.model.PickupLine
 import com.munity.pickappbook.core.model.Tag
 import com.munity.pickappbook.util.PickupLineUtil.plus
@@ -15,9 +27,9 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.job
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.plus
 import kotlin.io.encoding.Base64
 import kotlin.io.encoding.ExperimentalEncodingApi
@@ -25,12 +37,22 @@ import kotlin.io.encoding.ExperimentalEncodingApi
 class ThePlaybookRepository(
     parentScope: CoroutineScope,
     private val pickAppPrefsDS: PreferencesStorage,
+    private val roomDatabase: PickAppDatabase,
     private val thePlaybookApi: ThePlaybookApi,
 ) {
     private val repositoryScope: CoroutineScope = run {
         val supervisorJob = SupervisorJob(parent = parentScope.coroutineContext.job)
         parentScope + Dispatchers.IO + supervisorJob
     }
+
+    private val pickupLineDao: PickupLineDao = roomDatabase.pickupLineDao
+    private val tagDao: TagDao = roomDatabase.tagDao
+    private val feedPickupLineWithTagsDao: FeedPickupLineWithTagsDao =
+        roomDatabase.feedPickupLineWithTagsDao
+    private val personalPickupLineWithTagsDao: PersonalPickupLineWithTagsDao =
+        roomDatabase.personalPickupLineWithTagsDao
+    private val favoritePickupLineWithTagsDao: FavoritePickupLineWithTagsDao =
+        roomDatabase.favoritePickupLineWithTagsDao
 
     val isLoggedIn: Flow<Boolean> = pickAppPrefsDS.storedPreferences.map { storedPrefs ->
         !(storedPrefs.username.isNullOrEmpty() || storedPrefs.password.isNullOrEmpty())
@@ -43,6 +65,25 @@ class ThePlaybookRepository(
     val currentDisplayName: Flow<String?> = pickAppPrefsDS.storedPreferences.map { storedPrefs ->
         storedPrefs.displayName
     }
+
+    val personalPickupLines: Flow<List<PickupLine>> =
+        personalPickupLineWithTagsDao.getPickupLinesWithTags().map { pickupLinesEntities ->
+            pickupLinesEntities.map { it.asExternalModel() }
+        }
+
+    val favoritePickupLines: Flow<List<PickupLine>> =
+        favoritePickupLineWithTagsDao.getPickupLinesWithTags().map { pickupLinesEntities ->
+            pickupLinesEntities.map { it.asExternalModel() }
+        }
+
+    val feedPickupLines: Flow<List<PickupLine>> =
+        feedPickupLineWithTagsDao.getPickupLinesWithTags().map { pickupLinesEntities ->
+            pickupLinesEntities.map { it.asExternalModel() }
+        }
+
+    private val _searchedPickupLines: SnapshotStateList<PickupLine> =
+        mutableStateListOf<PickupLine>()
+    val searchedPickupLines: List<PickupLine> = _searchedPickupLines
 
     private val _messages = MutableSharedFlow<String?>()
     val messages: SharedFlow<String?> = _messages.asSharedFlow()
@@ -132,7 +173,10 @@ class ThePlaybookRepository(
     }
 
     suspend fun getTags(): Result<List<Tag>> {
-        return thePlaybookApi.getTags().map { it.asExternalTagsModel() as List<Tag> }
+        return thePlaybookApi.getTags()
+            .map { tagResponsesResult ->
+                tagResponsesResult.map { it.asExternalModel() }
+            }
     }
 
     suspend fun createPickupLine(
@@ -148,87 +192,100 @@ class ThePlaybookRepository(
         return result.map { "Successfully created" }
     }
 
-    private suspend fun refreshPickupLine(
-        pickupLineIndex: Int,
-        pickupLines: SnapshotStateList<PickupLine>,
-    ): Result<String> {
-        val result = getPickupLine(pickupLines[pickupLineIndex].id)
-
-        return when {
-            result.isSuccess -> {
-                pickupLines[pickupLineIndex] = result.getOrNull()!!
-                Result.success("PickupLine successfully updated")
-            }
-
-            else -> Result.failure(result.exceptionOrNull()!!)
-        }
-    }
+//    private suspend fun refreshPickupLine(
+//        pickupLineIndex: Int,
+//        pickupLines: SnapshotStateList<PickupLine>,
+//    ): Result<String> {
+//        val result = getPickupLine(pickupLines[pickupLineIndex].id)
+//
+//        return when {
+//            result.isSuccess -> {
+//                pickupLines[pickupLineIndex] = result.getOrNull()!!
+//                Result.success("PickupLine successfully updated")
+//            }
+//
+//            else -> Result.failure(result.exceptionOrNull()!!)
+//        }
+//    }
 
     private suspend fun updateReaction(
-        pickupLineIndex: Int,
-        pickupLines: SnapshotStateList<PickupLine>,
+        pickupLineToUpdate: PickupLine,
         newReaction: PickupLine.Reaction,
-        oldReaction: PickupLine.Reaction,
+        newStatistics: PickupLine.Statistics,
     ): String {
-        // Update affected pickup line
-        pickupLines[pickupLineIndex] =
-            pickupLines[pickupLineIndex].copy(reaction = newReaction)
-        val result = thePlaybookApi.putReaction(
-            pickupLines[pickupLineIndex].id,
-            newReaction.asNetworkModel()
+        // Update affected pickup line in local database
+        pickupLineDao.updatePickupLines(
+            pickupLineToUpdate.copy(reaction = newReaction, statistics = newStatistics)
+                .asEntityModel()
         )
 
-        if (result.isSuccess) {
-            // Get updated PickupLine
-            repositoryScope.launch {
-                refreshPickupLine(pickupLineIndex, pickupLines)
-            }
+        val result = thePlaybookApi.putReaction(
+            pickupLineId = pickupLineToUpdate.id,
+            newReaction = newReaction.asNetworkModel()
+        )
 
+        result.onSuccess {
+            //TODO retrieve the same pickup line again
+            // That is: get updated PickupLine
             return "Reactions successfully updated"
         }
 
-        // Revert modified pickup line
-        pickupLines[pickupLineIndex] =
-            pickupLines[pickupLineIndex].copy(reaction = oldReaction)
-
-        // Get updated PickupLine
-        repositoryScope.launch {
-            refreshPickupLine(pickupLineIndex, pickupLines)
-        }
+        // Revert modified pickup line in local database
+        pickupLineDao.updatePickupLines(pickupLineToUpdate.asEntityModel())
 
         return result.exceptionOrNull()!!.message ?: "Reaction not updated"
     }
 
-    suspend fun updateStarred(
-        pickupLineIndex: Int, pickupLines: SnapshotStateList<PickupLine>,
+    suspend fun updatePLFavoriteProperty(
+        pickupLineIndex: Int,
+        pickupLineType: PickupLineType,
     ): String {
-        val oldReaction = pickupLines[pickupLineIndex].reaction.copy()
+        // Update affected pickup line
+        val pickupLineToUpdate = when (pickupLineType) {
+            PickupLineType.FEED -> feedPickupLines.first()[pickupLineIndex]
+            PickupLineType.PERSONAL -> personalPickupLines.first()[pickupLineIndex]
+            PickupLineType.FAVORITE -> favoritePickupLines.first()[pickupLineIndex]
+            PickupLineType.SEARCH -> TODO()
+        }
 
-        val newReaction = oldReaction.copy(isStarred = !oldReaction.isStarred)
+        val oldReaction = pickupLineToUpdate.reaction.copy()
+        val newReaction = oldReaction.copy(isFavorite = !oldReaction.isFavorite)
 
-        return updateReaction(pickupLineIndex, pickupLines, newReaction, oldReaction)
+        return updateReaction(
+            pickupLineToUpdate = pickupLineToUpdate,
+            newReaction = newReaction,
+            // Pass the same statistics when updating 'isFavorite'
+            newStatistics = pickupLineToUpdate.statistics
+        )
     }
 
     suspend fun updateVote(
         pickupLineIndex: Int,
-        pickupLines: SnapshotStateList<PickupLine>,
+        pickupLineType: PickupLineType,
         newVote: PickupLine.Reaction.Vote,
     ): String {
-        val oldReaction = pickupLines[pickupLineIndex].reaction.copy()
-        val oldStatistics = pickupLines[pickupLineIndex].statistics.copy()
+        // Update affected pickup line
+        val pickupLineToUpdate = when (pickupLineType) {
+            PickupLineType.FEED -> feedPickupLines.first()[pickupLineIndex]
+            PickupLineType.PERSONAL -> personalPickupLines.first()[pickupLineIndex]
+            PickupLineType.FAVORITE -> favoritePickupLines.first()[pickupLineIndex]
+            PickupLineType.SEARCH -> TODO()
+        }
+
+        val oldReaction = pickupLineToUpdate.reaction.copy()
 
         val (newVote, weights) = oldReaction.vote.plus(newVote)
         val newReaction = oldReaction.copy(vote = newVote)
 
-        // Calculate new statistics with `weights`
-        pickupLines[pickupLineIndex] =
-            pickupLines[pickupLineIndex].copy(statistics = oldStatistics.plus(weights))
-
-        return updateReaction(pickupLineIndex, pickupLines, newReaction, oldReaction)
+        return updateReaction(
+            pickupLineToUpdate = pickupLineToUpdate,
+            newReaction = newReaction,
+            newStatistics = pickupLineToUpdate.statistics.plus(weights)
+        )
     }
 
     suspend fun getPickupLineList(
-        pickupLines: SnapshotStateList<PickupLine>,
+        pickupLineType: PickupLineType,
         title: String? = null,
         content: String? = null,
         starred: Boolean? = null,
@@ -240,42 +297,96 @@ class ThePlaybookRepository(
     ): String? {
         var message: String? = null
 
-        val result = thePlaybookApi.getPickupLineList().map { it.pickupLines }
+        val result: Result<List<PickupLineResponse>>
 
-        result.onSuccess {
-            pickupLines.swapList(it.asExternalPLsModel() as List<PickupLine>)
-        }.onFailure {
-            message = result.exceptionOrNull()!!.message
+        when (pickupLineType) {
+            PickupLineType.FEED -> {
+                result = thePlaybookApi.getPickupLineList().map { it.pickupLines }
+
+                result.onSuccess { pickupLineResponses ->
+                    pickupLineResponses.forEach { pickupLineResponse ->
+                        roomDatabase.withTransaction {
+                            pickupLineDao.insertPickupLines(pickupLineResponse.asEntity())
+                            pickupLineResponse.tags?.forEach { tag ->
+                                tagDao.insertTags(tag.asEntity())
+                                feedPickupLineWithTagsDao.insertPickupLinesWithTags(
+                                    FeedPLTagCrossRefEntity(
+                                        pickupLineResponse.id,
+                                        tag.id
+                                    )
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+
+
+            PickupLineType.PERSONAL -> {
+                val userInfo = thePlaybookApi.getUserInfo()
+                result = thePlaybookApi.getPickupLineList(userId = userInfo.getOrNull()!!.id)
+                    .map { it.pickupLines }
+                result.onSuccess { pickupLineResponses ->
+                    pickupLineResponses.forEach { pickupLineResponse ->
+                        roomDatabase.withTransaction {
+                            pickupLineDao.insertPickupLines(pickupLineResponse.asEntity())
+                            pickupLineResponse.tags?.forEach { tag ->
+                                tagDao.insertTags(tag.asEntity())
+                                personalPickupLineWithTagsDao.insertPickupLinesWithTags(
+                                    PersonalPLTagCrossRefEntity(
+                                        pickupLineResponse.id,
+                                        tag.id
+                                    )
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+
+            PickupLineType.FAVORITE -> {
+                result = thePlaybookApi.getPickupLineList(starred = true).map { it.pickupLines }
+                result.onSuccess { pickupLineResponses ->
+                    pickupLineResponses.forEach { pickupLineResponse ->
+                        roomDatabase.withTransaction {
+                            pickupLineDao.insertPickupLines(pickupLineResponse.asEntity())
+                            pickupLineResponse.tags?.forEach { tag ->
+                                tagDao.insertTags(tag.asEntity())
+                                favoritePickupLineWithTagsDao.insertPickupLinesWithTags(
+                                    FavoritePLTagCrossRefEntity(
+                                        pickupLineResponse.id,
+                                        tag.id
+                                    )
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+
+            PickupLineType.SEARCH -> {
+                result = thePlaybookApi.getPickupLineList(
+                    title = title,
+                    content = content,
+                    starred = starred,
+                    tagIds = tagIds,
+                    isVisible = isVisible,
+                    successPercentage = successPercentage,
+                    userId = userId,
+                    page = page
+                ).map { it.pickupLines }
+
+                return if (result.isSuccess) {
+                    _searchedPickupLines.swapList(
+                        result.getOrNull()!!.map { it.asExternalModel() })
+                    null
+                } else
+                    result.exceptionOrNull()!!.message
+            }
         }
 
-        return message
-    }
-
-    suspend fun getFavoritePickupLineList(pickupLines: SnapshotStateList<PickupLine>): String? {
-        var message: String? = null
-
-        val result = thePlaybookApi.getPickupLineList(starred = true).map { it.pickupLines }
-
-        result.onSuccess {
-            pickupLines.swapList(it.asExternalPLsModel() as List<PickupLine>)
-        }.onFailure {
-            message = result.exceptionOrNull()!!.message
-        }
-
-        return message
-    }
-
-    suspend fun getPersonalPickupLineList(pickupLines: SnapshotStateList<PickupLine>): String? {
-        var message: String? = null
-
-        val userInfo = thePlaybookApi.getUserInfo()
-        val result = thePlaybookApi.getPickupLineList(userId = userInfo.getOrNull()!!.id)
-            .map { it.pickupLines }
-
-        result.onSuccess {
-            pickupLines.swapList(it.asExternalPLsModel() as List<PickupLine>)
-        }.onFailure {
-            message = result.exceptionOrNull()!!.message
+        result.onFailure { exception ->
+            message = exception.message
         }
 
         return message
@@ -296,8 +407,8 @@ class ThePlaybookRepository(
 
         val result = thePlaybookApi.getPickupLineList().map { it.pickupLines }
 
-        result.onSuccess {
-            pickupLines.swapList(it.asExternalPLsModel() as List<PickupLine>)
+        result.onSuccess { pickupLineResponses ->
+            pickupLines.swapList(pickupLineResponses.map { it.asExternalModel() })
         }.onFailure {
             message = result.exceptionOrNull()!!.message
         }

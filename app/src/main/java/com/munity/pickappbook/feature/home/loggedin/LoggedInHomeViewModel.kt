@@ -1,20 +1,21 @@
 package com.munity.pickappbook.feature.home.loggedin
 
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.runtime.mutableStateListOf
-import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import com.munity.pickappbook.PickAppBookApplication
+import com.munity.pickappbook.core.data.repository.PickupLineType
 import com.munity.pickappbook.core.data.repository.ThePlaybookRepository
 import com.munity.pickappbook.core.model.PickupLine
 import com.munity.pickappbook.core.model.Tag
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
@@ -32,15 +33,17 @@ class LoggedInHomeViewModel(private val thePlaybookRepo: ThePlaybookRepository) 
     private val _loggedInUiState = MutableStateFlow<LoggedInHomeUIState>(LoggedInHomeUIState())
     val loggedInHomeUiState: StateFlow<LoggedInHomeUIState> = _loggedInUiState.asStateFlow()
 
-    private val _pickupLines: SnapshotStateList<PickupLine> =
-        mutableStateListOf<PickupLine>()
-    val pickupLines: List<PickupLine> = _pickupLines
+    val pickupLines: StateFlow<List<PickupLine>> = thePlaybookRepo.feedPickupLines.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(),
+        initialValue = emptyList()
+    )
 
     fun onVoteClick(pickupLineIndex: Int, newVote: PickupLine.Reaction.Vote) {
         viewModelScope.launch {
             val message = thePlaybookRepo.updateVote(
                 pickupLineIndex = pickupLineIndex,
-                pickupLines = _pickupLines,
+                pickupLineType = PickupLineType.FEED,
                 newVote = newVote
             )
 
@@ -48,9 +51,12 @@ class LoggedInHomeViewModel(private val thePlaybookRepo: ThePlaybookRepository) 
         }
     }
 
-    fun onStarredBtnClick(pickupLineIndex: Int) {
+    fun onFavoriteBtnClick(pickupLineIndex: Int) {
         viewModelScope.launch {
-            thePlaybookRepo.updateStarred(pickupLineIndex, _pickupLines)
+            thePlaybookRepo.updatePLFavoriteProperty(
+                pickupLineIndex = pickupLineIndex,
+                pickupLineType = PickupLineType.FEED
+            )
         }
     }
 
@@ -60,7 +66,8 @@ class LoggedInHomeViewModel(private val thePlaybookRepo: ThePlaybookRepository) 
                 oldState.copy(isRefreshing = true)
             }
 
-            val message = thePlaybookRepo.getPickupLineFeed(_pickupLines)
+            val message =
+                thePlaybookRepo.getPickupLineList(pickupLineType = PickupLineType.FEED)
             thePlaybookRepo.emitMessage(message)
 
             _loggedInUiState.update { oldState ->

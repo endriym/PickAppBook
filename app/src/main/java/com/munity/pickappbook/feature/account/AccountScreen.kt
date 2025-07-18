@@ -62,6 +62,8 @@ fun AccountScreen(
     val isLoggedIn by accountVM.isLoggedIn.collectAsState()
     val currentUsername by accountVM.currentUsername.collectAsState()
     val currentDisplayName by accountVM.currentDisplayName.collectAsState()
+    val personalPickupLines by accountVM.personalPickupLines.collectAsState()
+    val favoritePickupLines by accountVM.favoritePickupLines.collectAsState()
 
     if (isLoggedIn) {
         Column(
@@ -131,7 +133,7 @@ fun AccountScreen(
                 SelectedTab.POSTS -> PullToRefreshLazyPickupCards(
                     isRefreshing = accountUiState.isPersonalRefreshing,
                     onRefresh = accountVM::onPersonalPLRefresh,
-                    pickupLines = accountVM.personalPickupLines,
+                    pickupLines = personalPickupLines,
                     onStarredBtnClick = accountVM::onPersonalPLStarredBtnClick,
                     onVoteClick = accountVM::onPersonalPLVoteClick,
                     onTagClick = { /*TODO()*/ },
@@ -141,7 +143,7 @@ fun AccountScreen(
                 SelectedTab.FAVORITES -> PullToRefreshLazyPickupCards(
                     isRefreshing = accountUiState.isFavoriteRefreshing,
                     onRefresh = accountVM::onFavoritePLRefresh,
-                    pickupLines = accountVM.favoritePickupLines,
+                    pickupLines = favoritePickupLines,
                     onStarredBtnClick = accountVM::onFavoritePLStarredBtnClick,
                     onVoteClick = accountVM::onFavoritePLVoteClick,
                     onTagClick = { /*TODO()*/ },

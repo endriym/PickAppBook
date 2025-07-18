@@ -19,7 +19,7 @@ import com.munity.pickappbook.core.data.remote.model.TagResponse
 import com.munity.pickappbook.core.data.remote.model.TokenResponse
 import com.munity.pickappbook.core.data.remote.model.UpdatePickupLineRequest
 import com.munity.pickappbook.core.data.remote.model.UserInfoResponse
-import com.munity.pickappbook.core.data.remote.model.UserResponse
+import com.munity.pickappbook.core.data.remote.model.UserRequest
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.plugins.ClientRequestException
@@ -69,7 +69,7 @@ class ThePlaybookApi(
             url(CREATE_USER_ENDPOINT)
             contentType(ContentType.Application.Json)
             setBody(
-                UserResponse(
+                UserRequest(
                     username = username,
                     displayName = displayName,
                     password = password,

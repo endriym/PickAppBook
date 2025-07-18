@@ -12,9 +12,7 @@ data class PickupLineResponse(
     val id: String,
     val title: String,
     val content: String,
-    @SerialName("user_id") val userId: String,
-    val username: String,
-    @SerialName("display_name") val displayName: String = "",
+    val user: UserResponse,
     @SerialName("updated_at") val updatedAt: String,
     val tags: List<TagResponse>? = null,
     @SerialName("visible") val isVisible: Boolean,
@@ -32,9 +30,9 @@ data class PickupLineResponse(
     @Serializable
     data class Reaction(
         @SerialName("starred") val isStarred: Boolean, val vote: Vote,
-    )
-
-    enum class Vote {
-        DOWNVOTE, NONE, UPVOTE
+    ) {
+        enum class Vote {
+            DOWNVOTE, NONE, UPVOTE
+        }
     }
 }

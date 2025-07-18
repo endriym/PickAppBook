@@ -34,7 +34,7 @@ data class PickupLine(
     }
 
     data class Reaction(
-        val isStarred: Boolean, val vote: Vote,
+        val isFavorite: Boolean, val vote: Vote,
     ) {
         companion object {
             fun default(): Reaction = Reaction(false, Vote.NONE)

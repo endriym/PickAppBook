@@ -1,13 +1,12 @@
 package com.munity.pickappbook.feature.account
 
-import androidx.compose.runtime.mutableStateListOf
-import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import com.munity.pickappbook.PickAppBookApplication
+import com.munity.pickappbook.core.data.repository.PickupLineType
 import com.munity.pickappbook.core.data.repository.ThePlaybookRepository
 import com.munity.pickappbook.core.model.PickupLine
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -50,13 +49,19 @@ class AccountViewModel(private val thePlaybookRepo: ThePlaybookRepository) : Vie
         initialValue = null
     )
 
-    private val _personalPickupLines: SnapshotStateList<PickupLine> =
-        mutableStateListOf<PickupLine>()
-    val personalPickupLines: List<PickupLine> = _personalPickupLines
+    val personalPickupLines: StateFlow<List<PickupLine>> =
+        thePlaybookRepo.personalPickupLines.stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(),
+            initialValue = emptyList()
+        )
 
-    private val _favoritePickupLines: SnapshotStateList<PickupLine> =
-        mutableStateListOf<PickupLine>()
-    val favoritePickupLines: List<PickupLine> = _favoritePickupLines
+    val favoritePickupLines: StateFlow<List<PickupLine>> =
+        thePlaybookRepo.favoritePickupLines.stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(),
+            initialValue = emptyList()
+        )
 
     fun onPersonalPLRefresh() {
         viewModelScope.launch {
@@ -64,7 +69,8 @@ class AccountViewModel(private val thePlaybookRepo: ThePlaybookRepository) : Vie
                 oldState.copy(isPersonalRefreshing = true)
             }
 
-            val message = thePlaybookRepo.getPersonalPickupLineList(_personalPickupLines)
+            val message =
+                thePlaybookRepo.getPickupLineList(pickupLineType = PickupLineType.PERSONAL)
             thePlaybookRepo.emitMessage(message)
 
             _accountUiState.update { oldState ->
@@ -75,7 +81,7 @@ class AccountViewModel(private val thePlaybookRepo: ThePlaybookRepository) : Vie
 
     fun onPersonalPLStarredBtnClick(pickupLineIndex: Int) {
         viewModelScope.launch {
-            thePlaybookRepo.updateStarred(pickupLineIndex, _personalPickupLines)
+            thePlaybookRepo.updatePLFavoriteProperty(pickupLineIndex, PickupLineType.PERSONAL)
         }
     }
 
@@ -83,7 +89,7 @@ class AccountViewModel(private val thePlaybookRepo: ThePlaybookRepository) : Vie
         viewModelScope.launch {
             val message = thePlaybookRepo.updateVote(
                 pickupLineIndex = pickupLineIndex,
-                pickupLines = _personalPickupLines,
+                pickupLineType = PickupLineType.PERSONAL,
                 newVote = newVote
             )
 
@@ -95,7 +101,7 @@ class AccountViewModel(private val thePlaybookRepo: ThePlaybookRepository) : Vie
         viewModelScope.launch {
             val message = thePlaybookRepo.updateVote(
                 pickupLineIndex = pickupLineIndex,
-                pickupLines = _favoritePickupLines,
+                pickupLineType = PickupLineType.FAVORITE,
                 newVote = newVote
             )
 
@@ -105,7 +111,10 @@ class AccountViewModel(private val thePlaybookRepo: ThePlaybookRepository) : Vie
 
     fun onFavoritePLStarredBtnClick(pickupLineIndex: Int) {
         viewModelScope.launch {
-            thePlaybookRepo.updateStarred(pickupLineIndex, _favoritePickupLines)
+            thePlaybookRepo.updatePLFavoriteProperty(
+                pickupLineIndex,
+                pickupLineType = PickupLineType.FAVORITE
+            )
         }
     }
 
@@ -115,7 +124,8 @@ class AccountViewModel(private val thePlaybookRepo: ThePlaybookRepository) : Vie
                 oldState.copy(isFavoriteRefreshing = true)
             }
 
-            val message = thePlaybookRepo.getFavoritePickupLineList(_favoritePickupLines)
+            val message =
+                thePlaybookRepo.getPickupLineList(pickupLineType = PickupLineType.FAVORITE)
             thePlaybookRepo.emitMessage(message)
 
             _accountUiState.update { oldState ->

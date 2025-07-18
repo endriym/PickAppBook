@@ -21,6 +21,7 @@ fun LoggedInHomeScreen(
 ) {
     val loggedInHomeVM: LoggedInHomeViewModel = viewModel(factory = LoggedInHomeViewModel.Factory)
     val loggedInHomeUIState by loggedInHomeVM.loggedInHomeUiState.collectAsState()
+    val feedPickupLines by loggedInHomeVM.pickupLines.collectAsState()
 
     Scaffold(
         floatingActionButton = { PickupLineFAB(onClick = loggedInHomeVM::onFABClick) },
@@ -32,8 +33,8 @@ fun LoggedInHomeScreen(
         PullToRefreshLazyPickupCards(
             isRefreshing = loggedInHomeUIState.isRefreshing,
             onRefresh = loggedInHomeVM::onPullToRefresh,
-            pickupLines = loggedInHomeVM.pickupLines,
-            onStarredBtnClick = loggedInHomeVM::onStarredBtnClick,
+            pickupLines = feedPickupLines,
+            onStarredBtnClick = loggedInHomeVM::onFavoriteBtnClick,
             onVoteClick = loggedInHomeVM::onVoteClick,
             onTagClick = {  /* TODO() */ },
             modifier = Modifier.padding(innerPadding)
