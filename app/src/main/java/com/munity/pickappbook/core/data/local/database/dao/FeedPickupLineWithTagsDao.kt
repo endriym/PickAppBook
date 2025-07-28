@@ -14,4 +14,8 @@ interface FeedPickupLineWithTagsDao :
     @Transaction
     @Query("SELECT * FROM pickup_line WHERE pickupLineId in (SELECT pickupLineId FROM feed_pl_tags)")
     override fun getPickupLinesWithTags(): Flow<List<PickupLineWithTagsRelation.FeedPickupLineWithTagsRelation>>
+
+    @Transaction
+    @Query("DELETE FROM pickup_line WHERE pickupLineId NOT IN (SELECT pickupLineId FROM personal_pl_tags) AND pickupLineId NOT IN (SELECT pickupLineId FROM favorite_pl_tags)")
+    override suspend fun deletePickupLines()
 }

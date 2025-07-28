@@ -24,5 +24,7 @@ interface PickupLineWithTagsDao<T : PLTagCrossRefEntity, R : PickupLineWithTagsR
     @Delete
     suspend fun deletePickupLinesWithTags(vararg plTagCrossRefEntities: T)
 
+    suspend fun deletePickupLines()
+
     fun getPickupLinesWithTags(): Flow<List<R>>
 }

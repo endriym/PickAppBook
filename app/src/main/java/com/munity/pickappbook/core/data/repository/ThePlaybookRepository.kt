@@ -19,6 +19,7 @@ import com.munity.pickappbook.core.data.remote.model.GetPickupLineListRequest
 import com.munity.pickappbook.core.data.remote.model.PickupLineResponse
 import com.munity.pickappbook.core.model.PickupLine
 import com.munity.pickappbook.core.model.Tag
+import com.munity.pickappbook.core.model.User
 import com.munity.pickappbook.util.PickupLineUtil.plus
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -145,6 +146,17 @@ class ThePlaybookRepository(
         pickAppPrefsDS.saveNewUser(username = "", displayName = "", password = "")
     }
 
+    suspend fun getUsers(
+        username: String? = null,
+        displayName: String? = null,
+        page: Int? = null,
+    ): Result<List<User>> =
+        thePlaybookApi.searchUsers(username = username, displayName = displayName, page = page)
+            .map { userListResponse -> userListResponse.users }
+            .map { userResponses ->
+                userResponses.map { it.asExternalModel() }
+            }
+
     suspend fun updatePickupLine(pickupLine: PickupLine): Result<PickupLine> =
         thePlaybookApi.updatePickupLine(
             pickupLineId = pickupLine.id,
@@ -168,7 +180,9 @@ class ThePlaybookRepository(
 
     suspend fun updateTag(newTag: Tag): Result<Tag> {
         return thePlaybookApi.updateTag(
-            tagId = newTag.id, tagName = newTag.name, tagDescription = newTag.description
+            tagId = newTag.id,
+            tagName = newTag.name,
+            tagDescription = newTag.description
         ).map { it.asExternalModel() }
     }
 
@@ -245,7 +259,7 @@ class ThePlaybookRepository(
             PickupLineType.FEED -> feedPickupLines.first()[pickupLineIndex]
             PickupLineType.PERSONAL -> personalPickupLines.first()[pickupLineIndex]
             PickupLineType.FAVORITE -> favoritePickupLines.first()[pickupLineIndex]
-            PickupLineType.SEARCH -> TODO()
+            PickupLineType.SEARCH -> searchedPickupLines[pickupLineIndex]
         }
 
         val oldReaction = pickupLineToUpdate.reaction.copy()
@@ -269,7 +283,7 @@ class ThePlaybookRepository(
             PickupLineType.FEED -> feedPickupLines.first()[pickupLineIndex]
             PickupLineType.PERSONAL -> personalPickupLines.first()[pickupLineIndex]
             PickupLineType.FAVORITE -> favoritePickupLines.first()[pickupLineIndex]
-            PickupLineType.SEARCH -> TODO()
+            PickupLineType.SEARCH -> searchedPickupLines[pickupLineIndex]
         }
 
         val oldReaction = pickupLineToUpdate.reaction.copy()
@@ -284,6 +298,15 @@ class ThePlaybookRepository(
         )
     }
 
+    suspend fun cleanPickupLineList(pickupLineType: PickupLineType) {
+        when (pickupLineType) {
+            PickupLineType.FEED -> feedPickupLineWithTagsDao.deletePickupLines()
+            PickupLineType.PERSONAL -> personalPickupLineWithTagsDao.deletePickupLines()
+            PickupLineType.FAVORITE -> favoritePickupLineWithTagsDao.deletePickupLines()
+            PickupLineType.SEARCH -> _searchedPickupLines.swapList(mutableListOf())
+        }
+    }
+
     suspend fun getPickupLineList(
         pickupLineType: PickupLineType,
         title: String? = null,
@@ -294,16 +317,19 @@ class ThePlaybookRepository(
         successPercentage: Double? = null,
         userId: String? = null,
         page: Int? = null,
-    ): String? {
+    ): Pair<Int, String?> {
         var message: String? = null
+        var newPickupLineReturned = 0
 
         val result: Result<List<PickupLineResponse>>
 
         when (pickupLineType) {
             PickupLineType.FEED -> {
-                result = thePlaybookApi.getPickupLineList().map { it.pickupLines }
+                result =
+                    thePlaybookApi.getPickupLineList(page = page).map { it.pickupLines }
 
                 result.onSuccess { pickupLineResponses ->
+                    newPickupLineReturned = pickupLineResponses.size
                     pickupLineResponses.forEach { pickupLineResponse ->
                         roomDatabase.withTransaction {
                             pickupLineDao.insertPickupLines(pickupLineResponse.asEntity())
@@ -324,9 +350,13 @@ class ThePlaybookRepository(
 
             PickupLineType.PERSONAL -> {
                 val userInfo = thePlaybookApi.getUserInfo()
-                result = thePlaybookApi.getPickupLineList(userId = userInfo.getOrNull()!!.id)
-                    .map { it.pickupLines }
+                result = thePlaybookApi.getPickupLineList(
+                    userId = userInfo.getOrNull()!!.id,
+                    page = page
+                ).map { it.pickupLines }
+
                 result.onSuccess { pickupLineResponses ->
+                    newPickupLineReturned = pickupLineResponses.size
                     pickupLineResponses.forEach { pickupLineResponse ->
                         roomDatabase.withTransaction {
                             pickupLineDao.insertPickupLines(pickupLineResponse.asEntity())
@@ -345,8 +375,10 @@ class ThePlaybookRepository(
             }
 
             PickupLineType.FAVORITE -> {
-                result = thePlaybookApi.getPickupLineList(starred = true).map { it.pickupLines }
+                result = thePlaybookApi.getPickupLineList(starred = true, page = page)
+                    .map { it.pickupLines }
                 result.onSuccess { pickupLineResponses ->
+                    newPickupLineReturned = pickupLineResponses.size
                     pickupLineResponses.forEach { pickupLineResponse ->
                         roomDatabase.withTransaction {
                             pickupLineDao.insertPickupLines(pickupLineResponse.asEntity())
@@ -377,11 +409,12 @@ class ThePlaybookRepository(
                 ).map { it.pickupLines }
 
                 return if (result.isSuccess) {
+                    newPickupLineReturned = result.getOrNull()!!.size
                     _searchedPickupLines.swapList(
                         result.getOrNull()!!.map { it.asExternalModel() })
-                    null
+                    Pair(newPickupLineReturned, null)
                 } else
-                    result.exceptionOrNull()!!.message
+                    Pair(newPickupLineReturned, result.exceptionOrNull()!!.message)
             }
         }
 
@@ -389,7 +422,7 @@ class ThePlaybookRepository(
             message = exception.message
         }
 
-        return message
+        return Pair(newPickupLineReturned, message)
     }
 
     suspend fun getPickupLineFeed(

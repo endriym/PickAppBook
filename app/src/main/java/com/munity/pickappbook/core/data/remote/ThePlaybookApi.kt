@@ -5,6 +5,7 @@ import com.munity.pickappbook.core.data.remote.ThePlaybookEndpoints.CREATE_USER_
 import com.munity.pickappbook.core.data.remote.ThePlaybookEndpoints.LOGIN_ENDPOINT
 import com.munity.pickappbook.core.data.remote.ThePlaybookEndpoints.PICKUP_LINES_ENDPOINT
 import com.munity.pickappbook.core.data.remote.ThePlaybookEndpoints.REACTION_ENDPOINT
+import com.munity.pickappbook.core.data.remote.ThePlaybookEndpoints.SEARCH_USERS_ENDPOINT
 import com.munity.pickappbook.core.data.remote.ThePlaybookEndpoints.TAGS_ENDPOINT
 import com.munity.pickappbook.core.data.remote.ThePlaybookEndpoints.UPDATE_USER_DISPLAY_NAME_ENDPOINT
 import com.munity.pickappbook.core.data.remote.ThePlaybookEndpoints.USER_IMAGE_ENDPOINT
@@ -19,6 +20,7 @@ import com.munity.pickappbook.core.data.remote.model.TagResponse
 import com.munity.pickappbook.core.data.remote.model.TokenResponse
 import com.munity.pickappbook.core.data.remote.model.UpdatePickupLineRequest
 import com.munity.pickappbook.core.data.remote.model.UserInfoResponse
+import com.munity.pickappbook.core.data.remote.model.UserListResponse
 import com.munity.pickappbook.core.data.remote.model.UserRequest
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
@@ -157,6 +159,28 @@ class ThePlaybookApi(
 
         return checkReturnResult(httpRequestBuilder) { responseToTransform ->
             responseToTransform.body<UserInfoResponse>()
+        }
+    }
+
+    suspend fun searchUsers(
+        username: String? = null,
+        displayName: String? = null,
+        page: Int? = null,
+    ): Result<UserListResponse> {
+        val httpRequestBuilder = HttpRequestBuilder().apply {
+            method = HttpMethod.Get
+            url(SEARCH_USERS_ENDPOINT)
+            url {
+                with(parameters) {
+                    username?.let { append("username", it) }
+                    displayName?.let { append("display_name", it) }
+                    page?.let { append("page", it.toString()) }
+                }
+            }
+        }
+
+        return checkReturnResult(httpRequestBuilder) { responseToTransform ->
+            responseToTransform.body<UserListResponse>()
         }
     }
 
