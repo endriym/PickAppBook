@@ -37,6 +37,9 @@ fun LoggedInHomeScreen(
             onStarredBtnClick = loggedInHomeVM::onFavoriteBtnClick,
             onVoteClick = loggedInHomeVM::onVoteClick,
             onTagClick = {  /* TODO() */ },
+            canLoadNewItems = loggedInHomeUIState.canLoadNewItems,
+            isLoadingNewItems = loggedInHomeUIState.isLoadingNewItems,
+            onLastPickupLineReached = loggedInHomeVM::onLastPickupLineReached,
             modifier = Modifier.padding(innerPadding)
         )
 

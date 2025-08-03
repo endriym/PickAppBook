@@ -53,9 +53,7 @@ private enum class SelectedTab(val index: Int) {
 }
 
 @Composable
-fun AccountScreen(
-    modifier: Modifier = Modifier,
-) {
+fun AccountScreen(modifier: Modifier = Modifier) {
     val accountVM: AccountViewModel = viewModel(factory = AccountViewModel.Factory)
     val accountUiState by accountVM.accountUiState.collectAsState()
     var selectedTab by remember { mutableStateOf(SelectedTab.POSTS) }
@@ -137,6 +135,9 @@ fun AccountScreen(
                     onStarredBtnClick = accountVM::onPersonalPLStarredBtnClick,
                     onVoteClick = accountVM::onPersonalPLVoteClick,
                     onTagClick = { /*TODO()*/ },
+                    canLoadNewItems = accountUiState.canLoadNewPersonalItems,
+                    isLoadingNewItems = accountUiState.isLoadingNewPersonalItems,
+                    onLastPickupLineReached = accountVM::onLastPersonalPLReached,
                     modifier = modifier.fillMaxSize()
                 )
 
@@ -147,6 +148,9 @@ fun AccountScreen(
                     onStarredBtnClick = accountVM::onFavoritePLStarredBtnClick,
                     onVoteClick = accountVM::onFavoritePLVoteClick,
                     onTagClick = { /*TODO()*/ },
+                    canLoadNewItems = accountUiState.canLoadNewFavoriteItems,
+                    isLoadingNewItems = accountUiState.isLoadingNewFavoriteItems,
+                    onLastPickupLineReached = accountVM::onLastFavoritePLReached,
                     modifier = modifier.fillMaxSize(),
                 )
             }
@@ -214,9 +218,4 @@ private fun AccountPrimaryTabRow(
             )
         }
     }
-}
-
-@Composable
-fun FavoritesScreenSection(modifier: Modifier = Modifier) {
-
 }

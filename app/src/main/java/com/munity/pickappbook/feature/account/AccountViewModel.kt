@@ -69,13 +69,41 @@ class AccountViewModel(private val thePlaybookRepo: ThePlaybookRepository) : Vie
                 oldState.copy(isPersonalRefreshing = true)
             }
 
-            val message =
-                thePlaybookRepo.getPickupLineList(pickupLineType = PickupLineType.PERSONAL)
+            val (nPickupLinesReturned, message) = thePlaybookRepo.getPickupLineList(pickupLineType = PickupLineType.PERSONAL)
             thePlaybookRepo.emitMessage(message)
 
             _accountUiState.update { oldState ->
-                oldState.copy(isPersonalRefreshing = false)
+                oldState.copy(
+                    isPersonalRefreshing = false,
+                    personalCurrentPage = 0,
+                    canLoadNewPersonalItems = nPickupLinesReturned > 0
+                )
             }
+        }
+    }
+
+    fun onLastPersonalPLReached() {
+        viewModelScope.launch {
+            _accountUiState.update { oldState ->
+                oldState.copy(
+                    isLoadingNewPersonalItems = true,
+                    personalCurrentPage = oldState.personalCurrentPage + 1
+                )
+            }
+
+            val (nPickupLinesReturned, message) = thePlaybookRepo.getPickupLineList(
+                pickupLineType = PickupLineType.FAVORITE,
+                page = _accountUiState.value.personalCurrentPage
+            )
+            thePlaybookRepo.emitMessage(message)
+
+            _accountUiState.update { oldState ->
+                oldState.copy(
+                    isLoadingNewPersonalItems = false,
+                    canLoadNewPersonalItems = nPickupLinesReturned > 0
+                )
+            }
+
         }
     }
 
@@ -124,12 +152,39 @@ class AccountViewModel(private val thePlaybookRepo: ThePlaybookRepository) : Vie
                 oldState.copy(isFavoriteRefreshing = true)
             }
 
-            val message =
-                thePlaybookRepo.getPickupLineList(pickupLineType = PickupLineType.FAVORITE)
+            val (nPickupLinesReturned, message) = thePlaybookRepo.getPickupLineList(pickupLineType = PickupLineType.FAVORITE)
             thePlaybookRepo.emitMessage(message)
 
             _accountUiState.update { oldState ->
-                oldState.copy(isFavoriteRefreshing = false)
+                oldState.copy(
+                    isFavoriteRefreshing = false,
+                    favoriteCurrentPage = 0,
+                    canLoadNewFavoriteItems = nPickupLinesReturned > 0
+                )
+            }
+        }
+    }
+
+    fun onLastFavoritePLReached() {
+        viewModelScope.launch {
+            _accountUiState.update { oldState ->
+                oldState.copy(
+                    isLoadingNewFavoriteItems = true,
+                    favoriteCurrentPage = oldState.favoriteCurrentPage + 1
+                )
+            }
+
+            val (nPickupLinesReturned, message) = thePlaybookRepo.getPickupLineList(
+                pickupLineType = PickupLineType.FAVORITE,
+                page = _accountUiState.value.favoriteCurrentPage
+            )
+            thePlaybookRepo.emitMessage(message)
+
+            _accountUiState.update { oldState ->
+                oldState.copy(
+                    isLoadingNewFavoriteItems = false,
+                    canLoadNewFavoriteItems = nPickupLinesReturned > 0
+                )
             }
         }
     }

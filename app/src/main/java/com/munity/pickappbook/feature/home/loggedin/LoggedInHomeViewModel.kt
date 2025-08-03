@@ -66,12 +66,37 @@ class LoggedInHomeViewModel(private val thePlaybookRepo: ThePlaybookRepository) 
                 oldState.copy(isRefreshing = true)
             }
 
-            val message =
+            thePlaybookRepo.cleanPickupLineList(pickupLineType = PickupLineType.FEED)
+            _loggedInUiState.update { oldState ->
+                oldState.copy(currentPage = 0)
+            }
+            val (nPickupLinesReturned, message) =
                 thePlaybookRepo.getPickupLineList(pickupLineType = PickupLineType.FEED)
             thePlaybookRepo.emitMessage(message)
 
             _loggedInUiState.update { oldState ->
-                oldState.copy(isRefreshing = false)
+                oldState.copy(isRefreshing = false, canLoadNewItems = nPickupLinesReturned > 0)
+            }
+        }
+    }
+
+    fun onLastPickupLineReached() {
+        viewModelScope.launch {
+            _loggedInUiState.update { oldState ->
+                oldState.copy(isLoadingNewItems = true)
+            }
+
+            _loggedInUiState.update { oldState ->
+                oldState.copy(currentPage = oldState.currentPage + 1)
+            }
+            val (nPickupLinesReturned, message) = thePlaybookRepo.getPickupLineList(
+                pickupLineType = PickupLineType.FEED,
+                page = _loggedInUiState.value.currentPage
+            )
+            thePlaybookRepo.emitMessage(message)
+
+            _loggedInUiState.update { oldState ->
+                oldState.copy(isLoadingNewItems = false, canLoadNewItems = nPickupLinesReturned > 0)
             }
         }
     }
@@ -174,8 +199,15 @@ class LoggedInHomeViewModel(private val thePlaybookRepo: ThePlaybookRepository) 
     }
 
     fun onAddTagBtnClick() {
-        _loggedInUiState.update { oldState ->
-            oldState.copy(isTagCreatorVisible = true)
+        with(_loggedInUiState) {
+            if (!value.isTagCreatorVisible)
+                update { oldState ->
+                    oldState.copy(isTagCreatorVisible = true)
+                }
+            else
+                update { oldState ->
+                    oldState.copy(isTagCreatorVisible = false)
+                }
         }
     }
 
@@ -191,25 +223,30 @@ class LoggedInHomeViewModel(private val thePlaybookRepo: ThePlaybookRepository) 
     }
 
     fun onSearchTagBtnClick() {
-        viewModelScope.launch {
-            // Show SearchCard composable
-            _loggedInUiState.update { oldState ->
-                oldState.copy(isTagSearcherVisible = true, isSearchingTags = true)
-            }
-
-            val result = thePlaybookRepo.getTags()
-            result.onSuccess {
+        if (!_loggedInUiState.value.isTagSearcherVisible) {
+            viewModelScope.launch {
+                // Show SearchCard composable
                 _loggedInUiState.update { oldState ->
-                    oldState.copy(searchedTags = result.getOrNull()!!)
+                    oldState.copy(isTagSearcherVisible = true, isSearchingTags = true)
                 }
-            }.onFailure {
 
+                val result = thePlaybookRepo.getTags()
+                result.onSuccess {
+                    _loggedInUiState.update { oldState ->
+                        oldState.copy(searchedTags = result.getOrNull()!!)
+                    }
+                }.onFailure {
+
+                }
+
+                _loggedInUiState.update { oldState ->
+                    oldState.copy(isSearchingTags = false)
+                }
             }
-
+        } else
             _loggedInUiState.update { oldState ->
-                oldState.copy(isSearchingTags = false)
+                oldState.copy(isTagSearcherVisible = false)
             }
-        }
     }
 
     fun onVisibilityCheckedChange(newVisibilityValue: Boolean) {
@@ -221,7 +258,7 @@ class LoggedInHomeViewModel(private val thePlaybookRepo: ThePlaybookRepository) 
     @OptIn(ExperimentalMaterial3Api::class)
     fun onPostBtnClick() {
         _loggedInUiState.update { oldState ->
-            oldState.copy(isLoading = true)
+            oldState.copy(isPostCreationLoading = true)
         }
 
         viewModelScope.launch {
@@ -241,7 +278,7 @@ class LoggedInHomeViewModel(private val thePlaybookRepo: ThePlaybookRepository) 
             }
 
             _loggedInUiState.update { oldState ->
-                oldState.copy(isLoading = false)
+                oldState.copy(isPostCreationLoading = false)
             }
         }
     }

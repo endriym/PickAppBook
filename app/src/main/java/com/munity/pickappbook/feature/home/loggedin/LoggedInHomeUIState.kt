@@ -15,6 +15,9 @@ data class LoggedInHomeUIState(
     val isTagCreationLoading: Boolean = false,
     val searchedTags: List<Tag> = listOf(),
     val pickupLineVisibilityCreate: Boolean = true,
-    val isLoading: Boolean = false,
+    val isPostCreationLoading: Boolean = false,
+    val canLoadNewItems: Boolean = true,
+    val isLoadingNewItems: Boolean = false,
+    val currentPage: Int = 0,
     val isSearchingTags: Boolean = false,
 )
