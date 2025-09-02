@@ -6,7 +6,7 @@ import androidx.room.PrimaryKey
 
 @Entity(tableName = "pickup_line")
 class PickupLineEntity(
-    @PrimaryKey val pickupLineId: String,
+    @PrimaryKey @ColumnInfo(name = "pl_id") val pickupLineId: String,
     val title: String,
     val content: String,
     @ColumnInfo(name = "author_id") val authorId: String,

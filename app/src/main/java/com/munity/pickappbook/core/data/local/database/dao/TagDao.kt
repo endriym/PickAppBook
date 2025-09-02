@@ -19,6 +19,6 @@ interface TagDao {
     @Delete
     suspend fun deleteTags(vararg tags: TagEntity)
 
-    @Query("SELECT * FROM tag WHERE tagId = :id")
+    @Query("SELECT * FROM tag WHERE tag_id = :id")
     suspend fun getTagById(id: String): TagEntity
 }

@@ -19,7 +19,7 @@ interface PickupLineDao {
     @Delete
     suspend fun deletePickupLines(vararg pickupLines: PickupLineEntity)
 
-    @Query("DELETE FROM pickup_line WHERE pickupLineId IN (:pickupLineIds)")
+    @Query("DELETE FROM pickup_line WHERE pl_id IN (:pickupLineIds)")
     suspend fun deleteAllIn(pickupLineIds: List<String>)
 
     @Query("DELETE FROM pickup_line")

@@ -3,8 +3,8 @@ package com.munity.pickappbook.core.data.local.database.entity
 import androidx.room.ColumnInfo
 import androidx.room.Entity
 
-@Entity(tableName = "pl_tags", primaryKeys = ["pl_id", "tag_id"])
-data class PLTagCrossRefEntity(
+@Entity(tableName = "posted_pl", primaryKeys = ["pl_id", "author_id"])
+data class PostedPickupLineEntity(
     @ColumnInfo(name = "pl_id") val pickupLineId: String,
-    @ColumnInfo(name = "tag_id") val tagId: String,
+    @ColumnInfo(name = "author_id") val authorId: String,
 )
