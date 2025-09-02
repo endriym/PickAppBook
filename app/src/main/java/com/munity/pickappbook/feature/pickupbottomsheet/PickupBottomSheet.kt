@@ -1,4 +1,4 @@
-package com.munity.pickappbook.feature.home.loggedin
+package com.munity.pickappbook.feature.pickupbottomsheet
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -68,6 +68,7 @@ fun PickupBottomSheet(
     isPickupVisible: Boolean,
     onVisibilityCheckedChange: (Boolean) -> Unit,
     onPostBtnClick: () -> Unit,
+    isEditMode: Boolean = false,
     modifier: Modifier = Modifier,
 ) {
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
@@ -250,7 +251,7 @@ fun PickupBottomSheet(
                 .align(Alignment.CenterHorizontally)
                 .padding(top = 20.dp, end = 20.dp, bottom = 20.dp),
         ) {
-            Text("Post")
+            Text(if (isEditMode) "Update" else "Post")
         }
     }
 }

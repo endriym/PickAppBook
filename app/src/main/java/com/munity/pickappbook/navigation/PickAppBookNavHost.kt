@@ -4,24 +4,25 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
-import com.munity.pickappbook.feature.account.navigation.accountScreen
-import com.munity.pickappbook.feature.home.navigation.homeScreen
-import com.munity.pickappbook.feature.search.navigation.searchScreen
+import com.munity.pickappbook.feature.account.navigation.accountNavHost
+import com.munity.pickappbook.feature.home.navigation.homeNavHost
+import com.munity.pickappbook.feature.search.navigation.searchNavHost
 
 @Composable
 fun PickAppBookNavHost(
     navHostController: NavHostController,
     startDestination: Any,
+    loggedInUserId: String?,
     showSnackbar: suspend (String) -> Boolean,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     NavHost(
         navController = navHostController,
         startDestination = startDestination,
         modifier = modifier
     ) {
-        homeScreen(showSnackbar)
-        searchScreen()
-        accountScreen(showSnackbar)
+        homeNavHost(showSnackbar = showSnackbar)
+        searchNavHost(showSnackbar = showSnackbar)
+        accountNavHost(showSnackbar = showSnackbar, authorId = loggedInUserId)
     }
 }

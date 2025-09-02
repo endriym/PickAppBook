@@ -11,7 +11,7 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
-            PickAppBook()
+            PickAppBook(application as PickAppBookApplication)
         }
     }
 }

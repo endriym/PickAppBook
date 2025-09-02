@@ -19,7 +19,7 @@ private val Context.dataStore: DataStore<Preferences> by preferencesDataStore(
 )
 
 class PickAppBookApplication : Application() {
-    private lateinit var pickAppPreferencesDataSource: PickAppPreferencesDataSource
+    lateinit var pickAppPreferencesDataSource: PickAppPreferencesDataSource
     private lateinit var thePlaybookApi: ThePlaybookApi
     lateinit var thePlaybookRepository: ThePlaybookRepository
     lateinit var applicationCoroutineScope: CoroutineScope
