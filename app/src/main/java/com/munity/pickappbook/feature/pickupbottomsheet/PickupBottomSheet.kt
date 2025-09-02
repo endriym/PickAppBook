@@ -105,7 +105,7 @@ fun PickupBottomSheet(
                 onValueChange = onContentTFChange,
                 placeholder = { Text(text = "Content") },
                 label = { Text(text = "Content") },
-                maxLines = 2,
+                maxLines = 4,
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(start = 16.dp, end = 16.dp, top = 8.dp),
