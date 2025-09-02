@@ -6,8 +6,9 @@ import kotlinx.coroutines.flow.Flow
 interface PreferencesStorage {
     val storedPreferences: Flow<StoredPreferences>
 
-    suspend fun saveNewUser(username: String, displayName: String, password: String)
-    suspend fun saveDisplayName(newDisplayName: String)
-    suspend fun savePassword(newPassword: String)
-    suspend fun saveAccessToken(newAccessToken: String, expiration: String)
+    suspend fun saveNewUser(userId: String, username: String, displayName: String, password: String)
+    suspend fun saveNewDisplayName(newDisplayName: String)
+    suspend fun saveNewPassword(newPassword: String)
+    suspend fun saveNewAccessToken(newAccessToken: String, expiration: String)
+    suspend fun removeUser()
 }

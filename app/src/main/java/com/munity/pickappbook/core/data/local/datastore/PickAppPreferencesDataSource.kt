@@ -16,6 +16,7 @@ class PickAppPreferencesDataSource(
     private val dataStore: DataStore<Preferences>,
 ) : PreferencesStorage {
     private companion object {
+        val USER_ID_KEY = stringPreferencesKey("user_id")
         val USERNAME_KEY = stringPreferencesKey("username")
         val DISPLAY_NAME_KEY = stringPreferencesKey("display_name")
         val PASSWORD_KEY = stringPreferencesKey("password")
@@ -33,6 +34,7 @@ class PickAppPreferencesDataSource(
                 throw exception
         }.map { preferences ->
             StoredPreferences(
+                userId = preferences[USER_ID_KEY],
                 username = preferences[USERNAME_KEY],
                 displayName = preferences[DISPLAY_NAME_KEY],
                 password = preferences[PASSWORD_KEY],
@@ -41,30 +43,47 @@ class PickAppPreferencesDataSource(
             )
         }
 
-    override suspend fun saveNewUser(username: String, displayName: String, password: String) {
+    override suspend fun saveNewUser(
+        userId: String,
+        username: String,
+        displayName: String,
+        password: String,
+    ) {
         dataStore.edit { preferences ->
+            preferences[USER_ID_KEY] = userId
             preferences[USERNAME_KEY] = username
             preferences[DISPLAY_NAME_KEY] = displayName
             preferences[PASSWORD_KEY] = password
         }
     }
 
-    override suspend fun saveDisplayName(newDisplayName: String) {
+    override suspend fun saveNewDisplayName(newDisplayName: String) {
         dataStore.edit { preferences ->
             preferences[DISPLAY_NAME_KEY] = newDisplayName
         }
     }
 
-    override suspend fun savePassword(newPassword: String) {
+    override suspend fun saveNewPassword(newPassword: String) {
         dataStore.edit { preferences ->
             preferences[USERNAME_KEY] = newPassword
         }
     }
 
-    override suspend fun saveAccessToken(newAccessToken: String, expiration: String) {
+    override suspend fun saveNewAccessToken(newAccessToken: String, expiration: String) {
         dataStore.edit { preferences ->
             preferences[ACCESS_TOKEN_KEY] = newAccessToken
             preferences[EXPIRATION_KEY] = expiration
+        }
+    }
+
+    override suspend fun removeUser() {
+        dataStore.edit { preferences ->
+            preferences.remove(USER_ID_KEY)
+            preferences.remove(USERNAME_KEY)
+            preferences.remove(DISPLAY_NAME_KEY)
+            preferences.remove(PASSWORD_KEY)
+            preferences.remove(ACCESS_TOKEN_KEY)
+            preferences.remove(EXPIRATION_KEY)
         }
     }
 }
