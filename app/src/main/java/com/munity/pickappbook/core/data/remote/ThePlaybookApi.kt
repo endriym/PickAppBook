@@ -9,6 +9,7 @@ import com.munity.pickappbook.core.data.remote.ThePlaybookEndpoints.SEARCH_USERS
 import com.munity.pickappbook.core.data.remote.ThePlaybookEndpoints.TAGS_ENDPOINT
 import com.munity.pickappbook.core.data.remote.ThePlaybookEndpoints.UPDATE_USER_DISPLAY_NAME_ENDPOINT
 import com.munity.pickappbook.core.data.remote.ThePlaybookEndpoints.USER_IMAGE_ENDPOINT
+import com.munity.pickappbook.core.data.remote.ThePlaybookEndpoints.USER_INFO_BY_ID_ENDPOINT
 import com.munity.pickappbook.core.data.remote.ThePlaybookEndpoints.USER_INFO_ENDPOINT
 import com.munity.pickappbook.core.data.remote.model.CreatePickupLineRequest
 import com.munity.pickappbook.core.data.remote.model.ErrorResponse
@@ -19,9 +20,9 @@ import com.munity.pickappbook.core.data.remote.model.TagId
 import com.munity.pickappbook.core.data.remote.model.TagResponse
 import com.munity.pickappbook.core.data.remote.model.TokenResponse
 import com.munity.pickappbook.core.data.remote.model.UpdatePickupLineRequest
-import com.munity.pickappbook.core.data.remote.model.UserInfoResponse
 import com.munity.pickappbook.core.data.remote.model.UserListResponse
 import com.munity.pickappbook.core.data.remote.model.UserRequest
+import com.munity.pickappbook.core.data.remote.model.UserResponse
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.plugins.ClientRequestException
@@ -65,7 +66,7 @@ class ThePlaybookApi(
         displayName: String,
         password: String,
         image: String,
-    ): Result<UserInfoResponse> {
+    ): Result<UserResponse> {
         val httpRequestBuilder = HttpRequestBuilder().apply {
             method = HttpMethod.Post
             url(CREATE_USER_ENDPOINT)
@@ -81,7 +82,7 @@ class ThePlaybookApi(
         }
 
         return checkReturnResult(httpRequestBuilder) { responseToTransform ->
-            responseToTransform.body<UserInfoResponse>()
+            responseToTransform.body<UserResponse>()
         }
     }
 
@@ -125,19 +126,36 @@ class ThePlaybookApi(
     }
 
     /**
-     * Retrieves user info.
+     * Retrieves (logged in) user info.
      *
      * @return A [Result.success] containing the [UserInfoResponse] if the operation succeeds,
      * or a [Result.failure] containing an [ErrorResponse] if it fails.
      */
-    suspend fun getUserInfo(): Result<UserInfoResponse> {
+    suspend fun getUserInfo(): Result<UserResponse> {
         val httpRequestBuilder = HttpRequestBuilder().apply {
             method = HttpMethod.Get
             url(USER_INFO_ENDPOINT)
         }
 
         return checkReturnResult(httpRequestBuilder) { responseToTransform ->
-            responseToTransform.body<UserInfoResponse>()
+            responseToTransform.body<UserResponse>()
+        }
+    }
+
+    /**
+     * Retrieves user info by [userId].
+     *
+     * @return A [Result.success] containing the [UserInfoResponse] if the operation succeeds,
+     * or a [Result.failure] containing an [ErrorResponse] if it fails.
+     */
+    suspend fun getUserInfoById(userId: String): Result<UserResponse> {
+        val httpRequestBuilder = HttpRequestBuilder().apply {
+            method = HttpMethod.Get
+            url(USER_INFO_BY_ID_ENDPOINT.format(userId))
+        }
+
+        return checkReturnResult(httpRequestBuilder) { responseToTransform ->
+            responseToTransform.body<UserResponse>()
         }
     }
 
@@ -147,7 +165,7 @@ class ThePlaybookApi(
      * @return A [Result.success] containing the updated [UserInfoResponse] if the operation succeeds,
      * or a [Result.failure] containing an [ErrorResponse] if it fails.
      */
-    suspend fun updateUserDisplayName(newDisplayName: String): Result<UserInfoResponse> {
+    suspend fun updateUserDisplayName(newDisplayName: String): Result<UserResponse> {
         val httpRequestBuilder = HttpRequestBuilder().apply {
             method = HttpMethod.Put
             url(UPDATE_USER_DISPLAY_NAME_ENDPOINT)
@@ -158,7 +176,7 @@ class ThePlaybookApi(
         }
 
         return checkReturnResult(httpRequestBuilder) { responseToTransform ->
-            responseToTransform.body<UserInfoResponse>()
+            responseToTransform.body<UserResponse>()
         }
     }
 

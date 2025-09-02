@@ -70,7 +70,7 @@ fun thePlayBookHttpClient(preferencesStorage: PreferencesStorage): HttpClient {
                     val refreshedToken = refreshedTokenResponse.body<TokenResponse>()
 
                     // Save new token
-                    preferencesStorage.saveAccessToken(
+                    preferencesStorage.saveNewAccessToken(
                         refreshedToken.token, refreshedToken.expiration
                     )
 

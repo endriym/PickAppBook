@@ -6,6 +6,7 @@ public object ThePlaybookEndpoints {
     const val SEARCH_USERS_ENDPOINT = "$BASE_URL/user"
     const val UPDATE_USER_DISPLAY_NAME_ENDPOINT = "$BASE_URL/user/name"
     const val USER_INFO_ENDPOINT = "$BASE_URL/user/info"
+    const val USER_INFO_BY_ID_ENDPOINT = "$BASE_URL/user/%s/info"
     const val USER_IMAGE_ENDPOINT = "$BASE_URL/images/%s.jpeg"
     const val LOGIN_ENDPOINT = "$BASE_URL/login"
     const val REFRESH_ENDPOINT = LOGIN_ENDPOINT
