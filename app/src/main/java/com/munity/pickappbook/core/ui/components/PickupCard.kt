@@ -1,8 +1,10 @@
 package com.munity.pickappbook.core.ui.components
 
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -16,10 +18,15 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountCircle
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
+import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -54,21 +61,20 @@ import coil3.request.crossfade
 import com.munity.pickappbook.R
 import com.munity.pickappbook.core.model.PickupLine
 import com.munity.pickappbook.core.model.Tag
+import com.munity.pickappbook.util.DateUtil
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PickupCard(
-    authorImageUrl: String,
-    author: String,
-    postDate: String,
-    titleLine: String,
-    line: String,
-    reaction: PickupLine.Reaction,
+    pickupLine: PickupLine,
+    onAuthorImageClick: (String) -> Unit,
+    onAuthorClick: (String) -> Unit,
+    isPersonal: Boolean,
+    onEditPLClick: (PickupLine) -> Unit,
+    onDeletePLClick: (PickupLine) -> Unit,
     onStarredBtnClick: () -> Unit,
-    statistics: PickupLine.Statistics?,
     onVoteClick: (PickupLine.Reaction.Vote) -> Unit,
-    tags: List<Tag>?,
     onTagClick: (Tag) -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -89,7 +95,7 @@ fun PickupCard(
             ) {
                 AsyncImage(
                     model = ImageRequest.Builder(LocalContext.current)
-                        .data(authorImageUrl)
+                        .data(pickupLine.author.profilePictureUrl)
                         .crossfade(true)
                         .build(),
                     placeholder = rememberVectorPainter(Icons.Default.AccountCircle),
@@ -101,61 +107,119 @@ fun PickupCard(
                         .padding(8.dp)
                         .size(40.dp)
                         .clip(CircleShape)
+                        .clickable(onClick = { onAuthorImageClick(pickupLine.author.id) })
                 )
 
                 Column(
                     modifier = Modifier.padding(8.dp)
                 ) {
-                    Text(text = author, style = MaterialTheme.typography.titleSmall)
-                    Text(text = postDate, style = MaterialTheme.typography.bodySmall)
+                    Text(
+                        text = pickupLine.author.username,
+                        style = MaterialTheme.typography.titleSmall,
+                        modifier = Modifier.clickable(onClick = { onAuthorClick(pickupLine.author.id) })
+                    )
+                    Text(
+                        text = DateUtil.instantToTimeAgo(pickupLine.updatedAt),
+                        style = MaterialTheme.typography.bodySmall
+                    )
                 }
             }
 
-            IconButton(
-                onClick =
-                    onStarredBtnClick, modifier = Modifier.padding(end = 4.dp)
-            ) {
-                val likedIcon =
-                    if (reaction.isFavorite) Icons.Filled.Favorite else Icons.Filled.FavoriteBorder
-                val contentDescription =
-                    if (reaction.isFavorite) "Unlike pickup line" else "Like pickup line"
-                Icon(
-                    imageVector = likedIcon,
-                    contentDescription = contentDescription
-                )
+            Row(modifier = Modifier.padding(end = 4.dp)) {
+                IconButton(
+                    onClick = onStarredBtnClick,
+                ) {
+                    val likedIcon =
+                        if (pickupLine.reaction.isFavorite) Icons.Filled.Favorite else Icons.Filled.FavoriteBorder
+                    val contentDescription =
+                        if (pickupLine.reaction.isFavorite) "Unlike pickup line" else "Like pickup line"
+                    Icon(
+                        imageVector = likedIcon,
+                        contentDescription = contentDescription
+                    )
+                }
+
+                if (isPersonal) {
+                    var expandedOptions by remember { mutableStateOf(false) }
+
+                    Box {
+                        IconButton(
+                            onClick = { expandedOptions = !expandedOptions },
+                        ) {
+                            Icon(
+                                imageVector = Icons.Filled.MoreVert,
+                                contentDescription = "See options for pickup line"
+                            )
+                        }
+
+                        DropdownMenu(
+                            expanded = expandedOptions,
+                            onDismissRequest = { expandedOptions = false }
+                        ) {
+                            DropdownMenuItem(
+                                text = { Text("Edit") },
+                                onClick = {
+                                    onEditPLClick(pickupLine)
+                                    expandedOptions = false
+                                },
+                                leadingIcon = {
+                                    Icon(
+                                        imageVector = Icons.Default.Edit,
+                                        contentDescription = "Edit pickup line"
+                                    )
+                                }
+                            )
+
+                            DropdownMenuItem(
+                                text = { Text("Delete") },
+                                onClick = {
+                                    onDeletePLClick(pickupLine)
+                                    expandedOptions = false
+                                },
+                                leadingIcon = {
+                                    Icon(
+                                        imageVector = Icons.Default.Delete,
+                                        contentDescription = "Edit pickup line"
+                                    )
+                                }
+                            )
+                        }
+                    }
+                }
             }
         }
 
         Text(
-            text = titleLine,
+            text = pickupLine.title,
             style = TextStyle.Default.copy(fontSize = 20.sp, fontWeight = FontWeight.W600),
             modifier = Modifier.padding(start = 16.dp, top = 8.dp, bottom = 2.dp)
         )
+
         Text(
-            text = line,
+            text = pickupLine.content,
             style = MaterialTheme.typography.bodyMedium,
             modifier = Modifier.padding(start = 16.dp, end = 12.dp, bottom = 10.dp)
         )
 
         UpvoteDownvoteContainer(
-            statistics = statistics,
-            vote = reaction.vote,
+            statistics = pickupLine.statistics,
+            vote = pickupLine.reaction.vote,
             onVoteClick = onVoteClick,
         )
 
-        if (tags != null) {
-            if (tags.isNotEmpty() && expanded) {
+        if (pickupLine.tags != null) {
+            if (pickupLine.tags.isNotEmpty() && expanded) {
                 LazyRow(
                     contentPadding = PaddingValues(horizontal = 12.dp, vertical = 8.dp),
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
                 ) {
-                    items(tags) { tag ->
+                    items(pickupLine.tags) { tag ->
                         TagSuggestionChip(tag = tag)
                     }
                 }
             }
         } else {
-            if (expanded) {
+            AnimatedVisibility(expanded) {
                 Text(
                     text = "No tags",
                     style = MaterialTheme.typography.labelMedium,
@@ -168,7 +232,7 @@ fun PickupCard(
 }
 
 @Composable
-fun UpvoteDownvoteContainer(
+private fun UpvoteDownvoteContainer(
     statistics: PickupLine.Statistics?,
     vote: PickupLine.Reaction.Vote,
     onVoteClick: (PickupLine.Reaction.Vote) -> Unit,
@@ -224,7 +288,7 @@ fun UpvoteDownvoteContainer(
 
 @Composable
 @OptIn(ExperimentalMaterial3Api::class)
-fun TagSuggestionChip(tag: Tag) {
+private fun TagSuggestionChip(tag: Tag) {
     val tooltipState = rememberTooltipState()
     val coroutineScope = rememberCoroutineScope()
 

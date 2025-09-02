@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
@@ -26,7 +27,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.munity.pickappbook.core.model.PickupLine
 import com.munity.pickappbook.core.model.Tag
-import com.munity.pickappbook.util.DateUtil
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -35,9 +35,14 @@ fun PullToRefreshLazyPickupCards(
     onRefresh: () -> Unit,
     canLoadNewItems: Boolean,
     isLoadingNewItems: Boolean,
+    listState: LazyListState = rememberLazyListState(),
     pickupLines: List<PickupLine>,
-    onStarredBtnClick: (Int) -> Unit,
-    onVoteClick: (Int, PickupLine.Reaction.Vote) -> Unit,
+    onAuthorClick: (String) -> Unit,
+    loggedInUsername: String?,
+    onEditPLClick: (PickupLine) -> Unit,
+    onDeletePLClick: (PickupLine) -> Unit,
+    onStarredBtnClick: (String) -> Unit,
+    onVoteClick: (String, PickupLine.Reaction.Vote) -> Unit,
     onTagClick: (Tag) -> Unit,
     onLastPickupLineReached: () -> Unit,
     modifier: Modifier = Modifier,
@@ -48,7 +53,12 @@ fun PullToRefreshLazyPickupCards(
         modifier = modifier
     ) {
         LazyPickupCards(
+            listState = listState,
             pickupLines = pickupLines,
+            onAuthorClick = onAuthorClick,
+            loggedInUsername = loggedInUsername,
+            onEditPLClick = onEditPLClick,
+            onDeletePLClick = onDeletePLClick,
             onStarredBtnClick = onStarredBtnClick,
             onVoteClick = onVoteClick,
             onTagClick = onTagClick,
@@ -56,16 +66,21 @@ fun PullToRefreshLazyPickupCards(
             canLoadNewItems = canLoadNewItems,
             isLoadingNewItems = isLoadingNewItems,
             onLastPickupLineReached = onLastPickupLineReached,
-            modifier = Modifier
+            modifier = Modifier,
         )
     }
 }
 
 @Composable
 private fun LazyPickupCards(
+    listState: LazyListState,
     pickupLines: List<PickupLine>,
-    onStarredBtnClick: (Int) -> Unit,
-    onVoteClick: (Int, PickupLine.Reaction.Vote) -> Unit,
+    onAuthorClick: (String) -> Unit,
+    loggedInUsername: String?,
+    onEditPLClick: (PickupLine) -> Unit,
+    onDeletePLClick: (PickupLine) -> Unit,
+    onStarredBtnClick: (String) -> Unit,
+    onVoteClick: (String, PickupLine.Reaction.Vote) -> Unit,
     onTagClick: (Tag) -> Unit,
     isRefreshing: Boolean,
     canLoadNewItems: Boolean,
@@ -73,8 +88,6 @@ private fun LazyPickupCards(
     onLastPickupLineReached: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val listState = rememberLazyListState()
-
     LaunchedEffect(key1 = listState.canScrollForward) {
         if (canLoadNewItems && !listState.canScrollForward && !isRefreshing) {
             onLastPickupLineReached()
@@ -94,16 +107,14 @@ private fun LazyPickupCards(
                 }) { index, pickupLine ->
 
                 PickupCard(
-                    authorImageUrl = pickupLine.author.profilePictureUrl,
-                    author = pickupLine.author.username,
-                    postDate = DateUtil.instantToTimeAgo(pickupLine.updatedAt),
-                    titleLine = pickupLine.title,
-                    line = pickupLine.content,
-                    tags = pickupLine.tags,
-                    reaction = pickupLine.reaction,
-                    statistics = pickupLine.statistics,
-                    onStarredBtnClick = { onStarredBtnClick(index) },
-                    onVoteClick = { vote -> onVoteClick(index, vote) },
+                    pickupLine = pickupLine,
+                    onAuthorImageClick = onAuthorClick,
+                    onAuthorClick = onAuthorClick,
+                    isPersonal = pickupLine.author.username == loggedInUsername,
+                    onEditPLClick = onEditPLClick,
+                    onDeletePLClick = onDeletePLClick,
+                    onStarredBtnClick = { onStarredBtnClick(pickupLine.id) },
+                    onVoteClick = { vote -> onVoteClick(pickupLine.id, vote) },
                     onTagClick = onTagClick,
                     modifier = Modifier,
                 )

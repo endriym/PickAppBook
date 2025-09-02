@@ -1,5 +1,7 @@
 package com.munity.pickappbook.core.ui.components
 
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
@@ -21,6 +23,8 @@ fun PasswordTextField(
     value: String,
     onValueChange: (String) -> Unit,
     modifier: Modifier = Modifier,
+    keyboardOptions: KeyboardOptions = KeyboardOptions.Default,
+    keyboardActions: KeyboardActions = KeyboardActions.Default,
 ) {
     var passwordHidden by remember { mutableStateOf(true) }
     val passwordVisualTransformation = PasswordVisualTransformation()
@@ -42,6 +46,8 @@ fun PasswordTextField(
                 }
             }
         },
+        keyboardOptions = keyboardOptions,
+        keyboardActions = keyboardActions,
         modifier = modifier
     )
 }
