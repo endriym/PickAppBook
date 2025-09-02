@@ -13,15 +13,20 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.munity.pickappbook.core.ui.components.PullToRefreshLazyPickupCards
+import com.munity.pickappbook.feature.pickupbottomsheet.PickupBottomSheet
+import com.munity.pickappbook.feature.pickupbottomsheet.PickupBottomSheetViewModel
 
 @Composable
 @ExperimentalMaterial3Api
 fun LoggedInHomeScreen(
+    onAuthorClick: (String) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val loggedInHomeVM: LoggedInHomeViewModel = viewModel(factory = LoggedInHomeViewModel.Factory)
     val loggedInHomeUIState by loggedInHomeVM.loggedInHomeUiState.collectAsState()
     val feedPickupLines by loggedInHomeVM.pickupLines.collectAsState()
+//    val loggedInUsername by loggedInHomeVM.loggedInUsername.collectAsState()
+    val loggedInUsername: String? = null
 
     Scaffold(
         floatingActionButton = { PickupLineFAB(onClick = loggedInHomeVM::onFABClick) },
@@ -34,41 +39,54 @@ fun LoggedInHomeScreen(
             isRefreshing = loggedInHomeUIState.isRefreshing,
             onRefresh = loggedInHomeVM::onPullToRefresh,
             pickupLines = feedPickupLines,
+            onAuthorClick = onAuthorClick,
             onStarredBtnClick = loggedInHomeVM::onFavoriteBtnClick,
+            loggedInUsername = loggedInUsername,
+            onEditPLClick = { /* TODO */ },
+            onDeletePLClick = { /* TODO */ },
             onVoteClick = loggedInHomeVM::onVoteClick,
             onTagClick = {  /* TODO() */ },
             canLoadNewItems = loggedInHomeUIState.canLoadNewItems,
             isLoadingNewItems = loggedInHomeUIState.isLoadingNewItems,
             onLastPickupLineReached = loggedInHomeVM::onLastPickupLineReached,
-            modifier = Modifier.padding(innerPadding)
+            modifier = Modifier.padding(innerPadding),
         )
 
         if (loggedInHomeUIState.isBottomSheetVisible) {
+            val pickupBottomSheetVM: PickupBottomSheetViewModel =
+                viewModel(factory = PickupBottomSheetViewModel.factory())
+            val pickupBottomSheetUiState by pickupBottomSheetVM.pickupBottomSheetUiState.collectAsState()
+
             PickupBottomSheet(
                 onBottomSheetDismiss = loggedInHomeVM::onBottomSheetDismiss,
-                titleTFValue = loggedInHomeUIState.pickupLineTitleCreate,
-                onTitleTFChange = loggedInHomeVM::onTitleTFChange,
-                contentTFValue = loggedInHomeUIState.pickupLineContentCreate,
-                onContentTFChange = loggedInHomeVM::onContentTFChange,
-                tagsToAdd = loggedInHomeUIState.tagsToAdd,
-                onAddedTagsItemClick = loggedInHomeVM::onAddedTagsItemClick,
-                onSearchTagBtnClick = loggedInHomeVM::onSearchTagBtnClick,
-                onAddTagBtnClick = loggedInHomeVM::onAddTagBtnClick,
-                tagNameTFValue = loggedInHomeUIState.tagNameCreate,
-                onTagNameChangeValue = loggedInHomeVM::onTagNameChangeValue,
-                tagDescriptionTFValue = loggedInHomeUIState.tagDescriptionCreate,
-                onTagDescriptionChangeValue = loggedInHomeVM::onTagDescriptionChangeValue,
-                onTagCreateBtnClick = loggedInHomeVM::onTagCreateBtnClick,
-                onCancelTagCreateBtnClick = loggedInHomeVM::onCancelTagCreateBtnClick,
-                isTagCreationLoading = loggedInHomeUIState.isTagCreationLoading,
-                isTagCreatorVisible = loggedInHomeUIState.isTagCreatorVisible,
-                isTagSearcherVisible = loggedInHomeUIState.isTagSearcherVisible,
-                isSearchingTags = loggedInHomeUIState.isSearchingTags,
-                searchedTags = loggedInHomeUIState.searchedTags,
-                onSearchedTagChipClick = loggedInHomeVM::onSearchedTagChipClick,
-                isPickupVisible = loggedInHomeUIState.pickupLineVisibilityCreate,
-                onVisibilityCheckedChange = loggedInHomeVM::onVisibilityCheckedChange,
-                onPostBtnClick = loggedInHomeVM::onPostBtnClick,
+                titleTFValue = pickupBottomSheetUiState.pickupLineTitleCreate,
+                onTitleTFChange = pickupBottomSheetVM::onTitleTFChange,
+                contentTFValue = pickupBottomSheetUiState.pickupLineContentCreate,
+                onContentTFChange = pickupBottomSheetVM::onContentTFChange,
+                tagsToAdd = pickupBottomSheetUiState.tagsToAdd,
+                onAddedTagsItemClick = pickupBottomSheetVM::onAddedTagsItemClick,
+                onSearchTagBtnClick = pickupBottomSheetVM::onSearchTagBtnClick,
+                onAddTagBtnClick = pickupBottomSheetVM::onAddTagBtnClick,
+                tagNameTFValue = pickupBottomSheetUiState.tagNameCreate,
+                onTagNameChangeValue = pickupBottomSheetVM::onTagNameChangeValue,
+                tagDescriptionTFValue = pickupBottomSheetUiState.tagDescriptionCreate,
+                onTagDescriptionChangeValue = pickupBottomSheetVM::onTagDescriptionChangeValue,
+                onTagCreateBtnClick = pickupBottomSheetVM::onTagCreateBtnClick,
+                onCancelTagCreateBtnClick = pickupBottomSheetVM::onCancelTagCreateBtnClick,
+                isTagCreationLoading = pickupBottomSheetUiState.isTagCreationLoading,
+                isTagCreatorVisible = pickupBottomSheetUiState.isTagCreatorVisible,
+                isTagSearcherVisible = pickupBottomSheetUiState.isTagSearcherVisible,
+                isSearchingTags = pickupBottomSheetUiState.isSearchingTags,
+                searchedTags = pickupBottomSheetUiState.searchedTags,
+                onSearchedTagChipClick = pickupBottomSheetVM::onSearchedTagChipClick,
+                isPickupVisible = pickupBottomSheetUiState.pickupLineVisibilityCreate,
+                onVisibilityCheckedChange = pickupBottomSheetVM::onVisibilityCheckedChange,
+                onPostBtnClick = {
+                    pickupBottomSheetVM.onPostBtnClick {
+                        loggedInHomeVM.onBottomSheetDismiss()
+                    }
+                },
+                isEditMode = false,
                 modifier = Modifier,
             )
         }

@@ -17,6 +17,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountCircle
@@ -41,8 +42,11 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -156,6 +160,8 @@ private fun LoginScreen(
     isIndefIndicatorVisible: Boolean,
     modifier: Modifier = Modifier,
 ) {
+    val passwordFocus = remember { FocusRequester() }
+
     Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = modifier) {
         TextField(
             value = usernameLoginTFValue,
@@ -163,6 +169,8 @@ private fun LoginScreen(
             placeholder = { Text(text = "Username") },
             label = { Text(text = "Username") },
             singleLine = true,
+            keyboardOptions = KeyboardOptions.Default.copy(imeAction = ImeAction.Next),
+            keyboardActions = KeyboardActions(onNext = { passwordFocus.requestFocus() }),
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(vertical = 8.dp, horizontal = 16.dp)
@@ -171,9 +179,12 @@ private fun LoginScreen(
         PasswordTextField(
             value = passwordLoginTFValue,
             onValueChange = onPasswordLoginTFValue,
+            keyboardOptions = KeyboardOptions.Default.copy(imeAction = ImeAction.Done),
+            keyboardActions = KeyboardActions(onDone = { onLoginBtnClick() }),
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(vertical = 8.dp, horizontal = 16.dp),
+                .padding(vertical = 8.dp, horizontal = 16.dp)
+                .focusRequester(passwordFocus),
         )
 
         Button(

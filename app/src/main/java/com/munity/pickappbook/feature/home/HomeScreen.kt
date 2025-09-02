@@ -14,6 +14,7 @@ import com.munity.pickappbook.feature.home.loggedout.LoggedOutHomeScreen
 @Composable
 fun HomeScreen(
     showSnackbar: suspend (String) -> Boolean,
+    onAuthorClick: (String) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val homeViewModel: HomeViewModel = viewModel(factory = HomeViewModel.Factory)
@@ -29,6 +30,7 @@ fun HomeScreen(
 
     if (isLoggedIn) {
         LoggedInHomeScreen(
+            onAuthorClick = onAuthorClick,
             modifier = modifier,
         )
     } else {
