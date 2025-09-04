@@ -29,7 +29,7 @@ abstract class PickAppDatabase : RoomDatabase() {
     abstract val postedPickupLineWithTagsDao: PostedPickupLineWithTagsDao
     abstract val favoritePickupLineWithTagsDao: FavoritePickupLineWithTagsDao
 
-    companion object FavoritePLTagCrossRefEntity {
+    companion object {
         @Volatile
         private var Instance: PickAppDatabase? = null
 
