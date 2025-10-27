@@ -19,7 +19,7 @@ abstract class FeedPickupLineWithTagsDao {
     abstract suspend fun insertPickupLines(vararg pickupLines: FeedPickupLineEntity)
 
     @Transaction
-    @Query("SELECT * FROM pickup_line WHERE pl_id in (SELECT pl_id FROM feed_pl)")
+    @Query("SELECT * FROM pickup_line INNER JOIN feed_pl on pickup_line.pl_id = feed_pl.pl_id ORDER BY insert_time")
     abstract fun getPickupLinesWithTags(): Flow<List<PickupLineWithTagsRelation>>
 
     @Query("DELETE FROM feed_pl")

@@ -487,7 +487,6 @@ class ThePlaybookApi(
         }
 
         return checkReturnResult(httpRequestBuilder) { responseToTransform ->
-            println(responseToTransform.bodyAsText())
             responseToTransform.body<PickupLineListResponse>()
         }
     }

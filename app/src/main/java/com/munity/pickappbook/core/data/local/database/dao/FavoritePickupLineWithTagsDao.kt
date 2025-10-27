@@ -19,7 +19,7 @@ abstract class FavoritePickupLineWithTagsDao {
     abstract suspend fun insertPickupLines(vararg pickupLines: FavoritePickupLineEntity)
 
     @Transaction
-    @Query("SELECT * FROM pickup_line WHERE pl_id in (SELECT pl_id FROM favorite_pl)")
+    @Query("SELECT * FROM pickup_line WHERE pl_id in (SELECT pl_id FROM favorite_pl) ORDER BY pl_id")
     abstract fun getPickupLinesWithTags(): Flow<List<PickupLineWithTagsRelation>>
 
     @Query("DELETE FROM favorite_pl")
