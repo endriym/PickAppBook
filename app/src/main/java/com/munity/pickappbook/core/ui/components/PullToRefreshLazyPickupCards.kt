@@ -10,7 +10,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
-import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -66,7 +66,7 @@ fun PullToRefreshLazyPickupCards(
             canLoadNewItems = canLoadNewItems,
             isLoadingNewItems = isLoadingNewItems,
             onLastPickupLineReached = onLastPickupLineReached,
-            modifier = Modifier,
+            modifier = Modifier.fillMaxSize(),
         )
     }
 }
@@ -99,13 +99,9 @@ private fun LazyPickupCards(
             state = listState,
             contentPadding = PaddingValues(horizontal = 12.dp, vertical = 8.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp),
-            modifier = modifier.fillMaxSize()
+            modifier = modifier
         ) {
-            itemsIndexed(
-                items = pickupLines, key = { index, pickupLine ->
-                    pickupLine.id
-                }) { index, pickupLine ->
-
+            items(items = pickupLines, key = { it.id }) { pickupLine ->
                 PickupCard(
                     pickupLine = pickupLine,
                     onAuthorImageClick = onAuthorClick,
@@ -140,9 +136,7 @@ private fun LazyPickupCards(
         }
     } else {
         Column(
-            modifier = modifier
-                .fillMaxSize()
-                .verticalScroll(rememberScrollState()),
+            modifier = modifier.verticalScroll(rememberScrollState()),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
