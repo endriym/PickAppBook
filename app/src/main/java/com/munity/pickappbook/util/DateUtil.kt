@@ -2,12 +2,11 @@ package com.munity.pickappbook.util
 
 import java.time.Duration
 import java.time.Instant
-import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 
 object DateUtil {
     fun iso8601ToInstant(iso8601Date: String): Instant {
-        val formatter = DateTimeFormatter.ISO_DATE_TIME.withZone(ZoneId.systemDefault())
+        val formatter = DateTimeFormatter.ISO_INSTANT
         return Instant.from(formatter.parse(iso8601Date))
     }
 
