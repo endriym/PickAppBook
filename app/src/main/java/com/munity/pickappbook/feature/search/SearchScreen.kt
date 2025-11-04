@@ -52,84 +52,96 @@ import coil3.request.crossfade
 import com.munity.pickappbook.core.model.Tag
 import com.munity.pickappbook.core.model.User
 import com.munity.pickappbook.core.ui.components.PullToRefreshLazyPickupCards
+import com.munity.pickappbook.core.ui.components.YouNeedToLogin
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SearchScreen(modifier: Modifier = Modifier) {
+fun SearchScreen(onAuthorClick: (String) -> Unit, modifier: Modifier = Modifier) {
     val searchVM: SearchViewModel = viewModel(factory = SearchViewModel.Factory)
     val searchUiState: SearchUIState by searchVM.searchUiState.collectAsState()
+    val isLoggedIn by searchVM.isLoggedIn.collectAsState()
     val userQuery: String by searchVM.userQuery.collectAsState()
     val tagFilterQuery: String by searchVM.tagFilterQuery.collectAsState()
     val matchingTags: List<Tag> by searchVM.matchingTags.collectAsState()
 
-    Column(modifier = modifier) {
-        SearchBarWithFilters(
-            query = searchUiState.query,
-            onQueryChange = searchVM::onQueryChange,
-            onTrailingClearIconClick = searchVM::onTrailingClearIconClick,
-            onSearch = searchVM::onSearch,
-            isSearchComplete = searchUiState.isSearchComplete,
+    if (isLoggedIn) {
+        Column(modifier = modifier) {
+            SearchBarWithFilters(
+                query = searchUiState.query,
+                onQueryChange = searchVM::onQueryChange,
+                onTrailingClearIconClick = searchVM::onTrailingClearIconClick,
+                onSearch = searchVM::onSearch,
+                isSearchComplete = searchUiState.isSearchComplete,
 
-            isFavoriteFilterOn = searchUiState.isFavoriteQuery,
-            successPercentage = searchUiState.sliderValue?.toInt(),
-            userFilter = searchUiState.userFilter,
-            filterTags = searchVM.filterTags,
-            onFilterChipClick = searchVM::onFilterChipClick,
-            onTagFilterChipClick = searchVM::onTagFilterChipClick,
-            onFilterBtnClick = searchVM::onFilterBtnClick,
-            modifier = Modifier.fillMaxWidth(),
-        )
+                isFavoriteFilterOn = searchUiState.isFavoriteQuery,
+                successPercentage = searchUiState.sliderValue?.toInt(),
+                userFilter = searchUiState.userFilter,
+                filterTags = searchVM.filterTags,
+                onFilterChipClick = searchVM::onFilterChipClick,
+                onTagFilterChipClick = searchVM::onTagFilterChipClick,
+                onFilterBtnClick = searchVM::onFilterBtnClick,
+                modifier = Modifier.fillMaxWidth(),
+            )
 
-        PullToRefreshLazyPickupCards(
-            isRefreshing = searchUiState.isSearching,
-            onRefresh = searchVM::onSearch,
-            pickupLines = searchVM.searchedPickupLines,
-            onStarredBtnClick = searchVM::onPLStarredBtnClick,
-            onVoteClick = searchVM::onPLVoteClick,
-            onTagClick = { /*TODO*/ },
-            canLoadNewItems = false, //TODO,
-            isLoadingNewItems = false,
-            onLastPickupLineReached = {}, //TODO
-            modifier = Modifier.fillMaxSize(),
-        )
-    }
+            PullToRefreshLazyPickupCards(
+                isRefreshing = searchUiState.isSearching,
+                onRefresh = searchVM::onSearch,
+                pickupLines = searchVM.searchedPickupLines,
+                sortingVisible = false,
+                onSortChipClick = { TODO() },
+                onAuthorClick = { /*TODO*/ },
+                onStarredBtnClick = searchVM::onPLStarredBtnClick,
+                loggedInUsername = null,
+                onEditPLClick = { /* TODO */ },
+                onDeletePLClick = { /* TODO */ },
+                onVoteClick = searchVM::onPLVoteClick,
+                onTagClick = { /*TODO*/ },
+                canLoadNewItems = false, //TODO,
+                isLoadingNewItems = false,
+                onLastPickupLineReached = {}, //TODO
+                modifier = Modifier.fillMaxSize(),
+            )
+        }
 
-    if (searchUiState.isBottomSheetVisible) {
-        SearchBottomSheet(
-            onBottomSheetDismiss = searchVM::onBottomSheetDismiss,
-            sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
+        if (searchUiState.isBottomSheetVisible) {
+            SearchBottomSheet(
+                onBottomSheetDismiss = searchVM::onBottomSheetDismiss,
+                sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
 
-            queryTypeValue = searchUiState.queryType,
-            onQueryTypeChange = searchVM::onQueryTypeChange,
+                queryTypeValue = searchUiState.queryType,
+                onQueryTypeChange = searchVM::onQueryTypeChange,
 
-            isFavoriteQuery = searchUiState.isFavoriteQuery ?: false,
-            onFavoriteQueryChange = searchVM::onIsFavoriteQueryChange,
+                isFavoriteQuery = searchUiState.isFavoriteQuery ?: false,
+                onFavoriteQueryChange = searchVM::onIsFavoriteQueryChange,
 
-            sliderValue = searchUiState.sliderValue ?: 0f,
-            onSliderValueChange = searchVM::onSliderValueChange,
+                sliderValue = searchUiState.sliderValue ?: 0f,
+                onSliderValueChange = searchVM::onSliderValueChange,
 
-            tagQueryValue = tagFilterQuery,
-            onTagQueryValueChange = searchVM::onTagFilterQueryChange,
-            isTagDropdownExpanded = searchUiState.isTagDropdownExpanded,
-            matchingTags = matchingTags,
-            filterTags = searchVM.filterTags,
-            onFilterTagClick = searchVM::onFilterTagClick,
-            onDropdownItemTagClick = searchVM::onDropdownItemTagClick,
-            onTagDropdownDismissRequest = searchVM::onTagDropdownDismissRequest,
+                tagQueryValue = tagFilterQuery,
+                onTagQueryValueChange = searchVM::onTagFilterQueryChange,
+                isTagDropdownExpanded = searchUiState.isTagDropdownExpanded,
+                matchingTags = matchingTags,
+                filterTags = searchVM.filterTags,
+                onFilterTagClick = searchVM::onFilterTagClick,
+                onDropdownItemTagClick = searchVM::onDropdownItemTagClick,
+                onTagDropdownDismissRequest = searchVM::onTagDropdownDismissRequest,
 
-            userFilter = searchUiState.userFilter,
-            onRemoveUserSelected = searchVM::onRemoveUserSelected,
-            onSearchUserBtnClick = searchVM::onSearchUserBtnClick,
-            isUserSearcherVisible = searchUiState.isUserSearcherVisible,
-            userQuery = userQuery,
-            onUserQueryChange = searchVM::onUserQueryChange,
-            isSearchingUsers = searchUiState.isSearchingUsers,
-            searchedUsers = searchVM.searchedUsers,
-            onSearchedUserClick = searchVM::onSearchedUserClick,
+                userFilter = searchUiState.userFilter,
+                onRemoveUserSelected = searchVM::onRemoveUserSelected,
+                onSearchUserBtnClick = searchVM::onSearchUserBtnClick,
+                isUserSearcherVisible = searchUiState.isUserSearcherVisible,
+                userQuery = userQuery,
+                onUserQueryChange = searchVM::onUserQueryChange,
+                isSearchingUsers = searchUiState.isSearchingUsers,
+                searchedUsers = searchVM.searchedUsers,
+                onSearchedUserClick = searchVM::onSearchedUserClick,
 
-            onApplyFiltersBtnClick = searchVM::onApplyFiltersClick,
-            modifier = Modifier,
-        )
+                onApplyFiltersBtnClick = searchVM::onApplyFiltersClick,
+                modifier = Modifier,
+            )
+        }
+    } else {
+        YouNeedToLogin(modifier = Modifier.fillMaxSize())
     }
 }
 

@@ -8,6 +8,7 @@ import androidx.lifecycle.viewmodel.viewModelFactory
 import com.munity.pickappbook.PickAppBookApplication
 import com.munity.pickappbook.core.data.repository.ThePlaybookRepository
 import com.munity.pickappbook.core.model.PickupLine
+import com.munity.pickappbook.core.ui.components.SortType
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -64,7 +65,7 @@ class LoggedInHomeViewModel(private val thePlaybookRepo: ThePlaybookRepository) 
             _loggedInUiState.update { oldState ->
                 oldState.copy(currentPage = 0)
             }
-            val (nPickupLinesReturned, message) = thePlaybookRepo.getFeedPickupLines()
+            val (nPickupLinesReturned, message) = thePlaybookRepo.getFeedPickupLines(sortType = _loggedInUiState.value.sortTypeSelected)
             thePlaybookRepo.emitMessage(message)
 
             _loggedInUiState.update { oldState ->
@@ -80,9 +81,13 @@ class LoggedInHomeViewModel(private val thePlaybookRepo: ThePlaybookRepository) 
             }
 
             _loggedInUiState.update { oldState ->
-                oldState.copy(currentPage = oldState.currentPage + 1)
+                if (oldState.currentPage == null)
+                    oldState.copy(currentPage = 0)
+                else
+                    oldState.copy(currentPage = oldState.currentPage + 1)
             }
             val (nPickupLinesReturned, message) = thePlaybookRepo.getFeedPickupLines(
+                sortType = _loggedInUiState.value.sortTypeSelected,
                 page = _loggedInUiState.value.currentPage
             )
             thePlaybookRepo.emitMessage(message)
@@ -91,6 +96,19 @@ class LoggedInHomeViewModel(private val thePlaybookRepo: ThePlaybookRepository) 
                 oldState.copy(isLoadingNewItems = false, canLoadNewItems = nPickupLinesReturned > 0)
             }
         }
+    }
+
+    fun onSortChipClick(sortTypeClicked: SortType) {
+        _loggedInUiState.update { oldState ->
+            oldState.copy(
+                sortTypeSelected = if (sortTypeClicked == _loggedInUiState.value.sortTypeSelected)
+                    null
+                else
+                    sortTypeClicked
+            )
+        }
+
+        onPullToRefresh()
     }
 
     fun onFABClick() {

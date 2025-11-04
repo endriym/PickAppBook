@@ -32,7 +32,6 @@ import io.ktor.client.request.setBody
 import io.ktor.client.request.url
 import io.ktor.client.statement.HttpResponse
 import io.ktor.client.statement.bodyAsBytes
-import io.ktor.client.statement.bodyAsText
 import io.ktor.http.ContentType
 import io.ktor.http.HttpMethod
 import io.ktor.http.contentType
@@ -465,6 +464,7 @@ class ThePlaybookApi(
         isVisible: GetPickupLineListRequest.Visibility? = null,
         successPercentage: Double? = null,
         userId: String? = null,
+        sortType: GetPickupLineListRequest.SortType? = null,
         page: Int? = null,
     ): Result<PickupLineListResponse> {
         val getPickupLineListRequest = GetPickupLineListRequest(
@@ -475,6 +475,7 @@ class ThePlaybookApi(
             isVisible = isVisible,
             successPercentage = successPercentage,
             userId = userId,
+            sortType = sortType,
             page = page,
         )
 

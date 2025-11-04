@@ -8,7 +8,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Logout
@@ -26,11 +25,8 @@ import androidx.compose.material3.Tab
 import androidx.compose.material3.TabRowDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.State
 import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -145,6 +141,8 @@ fun AccountScreen(
                             isRefreshing = accountUiState.isPostedRefreshing,
                             onRefresh = accountVM::onPostedPLRefresh,
                             pickupLines = postedPickupLines,
+                            sortingVisible = false,
+                            onSortChipClick = {},
                             onAuthorClick = onPLAuthorClick,
                             onStarredBtnClick = accountVM::onPostedPLStarredBtnClick,
                             loggedInUsername = loggedInUser?.username,
@@ -162,6 +160,8 @@ fun AccountScreen(
                             isRefreshing = accountUiState.isFavoriteRefreshing,
                             onRefresh = accountVM::onFavoritePLRefresh,
                             pickupLines = favoritePickupLines,
+                            sortingVisible = false,
+                            onSortChipClick = {},
                             onAuthorClick = onPLAuthorClick,
                             onStarredBtnClick = accountVM::onFavoritePLStarredBtnClick,
                             loggedInUsername = loggedInUser?.username,
@@ -182,6 +182,8 @@ fun AccountScreen(
                         isRefreshing = accountUiState.isPostedRefreshing,
                         onRefresh = accountVM::onPostedPLRefresh,
                         pickupLines = postedPickupLines,
+                        sortingVisible = false,
+                        onSortChipClick = {},
                         onAuthorClick = onPLAuthorClick,
                         onStarredBtnClick = accountVM::onPostedPLStarredBtnClick,
                         loggedInUsername = loggedInUser?.username,
@@ -320,28 +322,6 @@ fun SinglePrimaryTabRow(modifier: Modifier = Modifier) {
                     .size(36.dp)
                     .padding(4.dp)
             )
-        }
-    }
-}
-
-/**
- * Returns whether the lazy list is currently scrolling up.
- */
-@Composable
-private fun LazyListState.isScrollingUp(listener: (Boolean) -> Unit = {}): State<Boolean> {
-    var previousIndex by remember(this) { mutableIntStateOf(firstVisibleItemIndex) }
-    var previousScrollOffset by remember(this) { mutableIntStateOf(firstVisibleItemScrollOffset) }
-
-    return remember(this) {
-        derivedStateOf {
-            if (previousIndex != firstVisibleItemIndex) {
-                previousIndex > firstVisibleItemIndex
-            } else {
-                previousScrollOffset >= firstVisibleItemScrollOffset
-            }.also {
-                previousIndex = firstVisibleItemIndex
-                previousScrollOffset = firstVisibleItemScrollOffset
-            }
         }
     }
 }

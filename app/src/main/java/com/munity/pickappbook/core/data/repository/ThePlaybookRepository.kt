@@ -1,5 +1,6 @@
 package com.munity.pickappbook.core.data.repository
 
+import android.util.Log
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.room.withTransaction
@@ -22,6 +23,7 @@ import com.munity.pickappbook.core.data.remote.model.PickupLineResponse
 import com.munity.pickappbook.core.model.PickupLine
 import com.munity.pickappbook.core.model.Tag
 import com.munity.pickappbook.core.model.User
+import com.munity.pickappbook.core.ui.components.SortType
 import com.munity.pickappbook.util.PickupLineUtil.plus
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -41,6 +43,10 @@ class ThePlaybookRepository(
     private val roomDatabase: PickAppDatabase,
     private val thePlaybookApi: ThePlaybookApi,
 ) {
+    companion object {
+        private const val TAG = "ThePlaybookRepository"
+    }
+
     private val repositoryScope: CoroutineScope = run {
         val supervisorJob = SupervisorJob(parent = parentScope.coroutineContext.job)
         parentScope + Dispatchers.IO + supervisorJob
@@ -82,9 +88,13 @@ class ThePlaybookRepository(
         }
 
     val localFeedPickupLines: Flow<List<PickupLine>> =
-        feedPickupLineWithTagsDao.getPickupLinesWithTags().map { pickupLinesEntities ->
-            pickupLinesEntities.map { it.asExternalModel() }
-        }
+        feedPickupLineWithTagsDao.getPickupLinesWithTags()
+            .also {
+                Log.d(TAG, "feedPickupLineWithTagsDao: $it")
+            }
+            .map { pickupLinesEntities ->
+                pickupLinesEntities.map { it.asExternalModel() }
+            }
 
     private val _searchedPickupLines: SnapshotStateList<PickupLine> =
         mutableStateListOf<PickupLine>()
@@ -351,10 +361,10 @@ class ThePlaybookRepository(
                                 tag.id
                             )
                         )
-                        postedPickupLineWithTagsDao.insertPickupLines(
-                            PostedPickupLineEntity(pickupLineResponse.id, userId!!)
-                        )
                     }
+                    postedPickupLineWithTagsDao.insertPickupLines(
+                        PostedPickupLineEntity(pickupLineResponse.id, userId)
+                    )
                 }
             }
         }
@@ -386,10 +396,10 @@ class ThePlaybookRepository(
                                 tag.id
                             )
                         )
-                        favoritePickupLineWithTagsDao.insertPickupLines(
-                            FavoritePickupLineEntity(pickupLineResponse.id)
-                        )
                     }
+                    favoritePickupLineWithTagsDao.insertPickupLines(
+                        FavoritePickupLineEntity(pickupLineResponse.id)
+                    )
                 }
             }
         }
@@ -401,12 +411,16 @@ class ThePlaybookRepository(
         return Pair(newPickupLineReturned, message)
     }
 
-    suspend fun getFeedPickupLines(page: Int? = null): Pair<Int, String?> {
+    suspend fun getFeedPickupLines(
+        sortType: SortType? = null,
+        page: Int? = null,
+    ): Pair<Int, String?> {
         var message: String? = null
         var newPickupLineReturned = 0
 
         val result: Result<List<PickupLineResponse>> =
-            thePlaybookApi.getPickupLineList(page = page).map { it.pickupLines }
+            thePlaybookApi.getPickupLineList(sortType = sortType?.asNetworkModel(), page = page)
+                .map { it.pickupLines }
 
         result.onSuccess { pickupLineResponses ->
             newPickupLineReturned = pickupLineResponses.size
@@ -421,10 +435,10 @@ class ThePlaybookRepository(
                                 tag.id
                             )
                         )
-                        feedPickupLineWithTagsDao.insertPickupLines(
-                            FeedPickupLineEntity(pickupLineResponse.id)
-                        )
                     }
+                    feedPickupLineWithTagsDao.insertPickupLines(
+                        FeedPickupLineEntity(pickupLineResponse.id)
+                    )
                 }
             }
         }

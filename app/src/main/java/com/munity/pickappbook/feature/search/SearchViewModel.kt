@@ -8,16 +8,17 @@ import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import com.munity.pickappbook.PickAppBookApplication
-import com.munity.pickappbook.core.data.repository.PickupLineType
 import com.munity.pickappbook.core.data.repository.ThePlaybookRepository
 import com.munity.pickappbook.core.model.PickupLine
 import com.munity.pickappbook.core.model.Tag
 import com.munity.pickappbook.core.model.User
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.debounce
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlin.math.roundToInt
@@ -37,7 +38,18 @@ class SearchViewModel(private val thePlaybookRepo: ThePlaybookRepository) : View
     private val _searchUiState = MutableStateFlow<SearchUIState>(SearchUIState())
     val searchUiState: StateFlow<SearchUIState> = _searchUiState
 
-    val searchedPickupLines: List<PickupLine> = thePlaybookRepo.searchedPickupLines
+//    private val _queryFilters = MutableStateFlow<List<QueryType>>(listOf())
+//    val queryFilters: StateFlow<List<Query>>
+
+    val isLoggedIn: StateFlow<Boolean> =
+        thePlaybookRepo.isLoggedIn.stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(),
+            initialValue = false
+        )
+
+    private val _searchedPickupLines: SnapshotStateList<PickupLine> = mutableStateListOf()
+    val searchedPickupLines: List<PickupLine> = _searchedPickupLines
 
     private lateinit var _allTags: List<Tag>
 
@@ -98,15 +110,17 @@ class SearchViewModel(private val thePlaybookRepo: ThePlaybookRepository) : View
 
     fun onSearch() {
         viewModelScope.launch {
+            var nPickupLinesReturned: Int = 0
+
             _searchUiState.update { oldState ->
                 oldState.copy(isSearching = true)
             }
 
-            thePlaybookRepo.cleanPickupLineList(pickupLineType = PickupLineType.FEED)
-            val (nPickupLinesReturned, message) = with(_searchUiState.value) {
+            _searchedPickupLines.clear()
+
+            val result: Result<List<PickupLine>> = with(_searchUiState.value) {
                 when (queryType) {
-                    QueryType.CONTENT -> thePlaybookRepo.getPickupLineList(
-                        pickupLineType = PickupLineType.SEARCH,
+                    QueryType.CONTENT -> thePlaybookRepo.searchPickupLines(
                         content = query.ifBlank { null },
                         starred = isFavoriteQuery,
                         tagIds = _filterTags.map { it.id },
@@ -114,8 +128,7 @@ class SearchViewModel(private val thePlaybookRepo: ThePlaybookRepository) : View
                         successPercentage = sliderValue?.roundToInt()?.div(100.0),
                     )
 
-                    QueryType.TITLE -> thePlaybookRepo.getPickupLineList(
-                        pickupLineType = PickupLineType.SEARCH,
+                    QueryType.TITLE -> thePlaybookRepo.searchPickupLines(
                         title = query.ifBlank { null },
                         starred = isFavoriteQuery,
                         tagIds = _filterTags.map { it.id },
@@ -125,8 +138,7 @@ class SearchViewModel(private val thePlaybookRepo: ThePlaybookRepository) : View
 
                     QueryType.CONTENT_TITLE -> TODO()
 
-                    else -> thePlaybookRepo.getPickupLineList(
-                        pickupLineType = PickupLineType.SEARCH,
+                    else -> thePlaybookRepo.searchPickupLines(
                         content = query.ifBlank { null },
                         starred = isFavoriteQuery,
                         tagIds = _filterTags.map { it.id },
@@ -135,7 +147,13 @@ class SearchViewModel(private val thePlaybookRepo: ThePlaybookRepository) : View
                     )
                 }
             }
-            thePlaybookRepo.emitMessage(message)
+
+            result.onSuccess {
+                _searchedPickupLines.addAll(it)
+                nPickupLinesReturned = it.size
+            }.onFailure { exception ->
+                thePlaybookRepo.emitMessage(exception.message)
+            }
 
             _searchUiState.update { oldState ->
                 oldState.copy(
@@ -147,17 +165,16 @@ class SearchViewModel(private val thePlaybookRepo: ThePlaybookRepository) : View
         }
     }
 
-    fun onPLStarredBtnClick(pickupLineIndex: Int) {
+    fun onPLStarredBtnClick(pickupLineId: String) {
         viewModelScope.launch {
-            thePlaybookRepo.updatePLFavoriteProperty(pickupLineIndex, PickupLineType.SEARCH)
+            thePlaybookRepo.updatePLFavoriteProperty(pickupLineId)
         }
     }
 
-    fun onPLVoteClick(pickupLineIndex: Int, newVote: PickupLine.Reaction.Vote) {
+    fun onPLVoteClick(pickupLineId: String, newVote: PickupLine.Reaction.Vote) {
         viewModelScope.launch {
             val message = thePlaybookRepo.updateVote(
-                pickupLineIndex = pickupLineIndex,
-                pickupLineType = PickupLineType.SEARCH,
+                pickupLineId = pickupLineId,
                 newVote = newVote
             )
 
