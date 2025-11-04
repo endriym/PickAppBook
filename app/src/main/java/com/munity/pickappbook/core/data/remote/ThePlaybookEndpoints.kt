@@ -1,7 +1,9 @@
 package com.munity.pickappbook.core.data.remote
 
+import com.munity.pickappbook.BuildConfig
+
 public object ThePlaybookEndpoints {
-    const val BASE_URL = "/api"
+    const val BASE_URL = BuildConfig.THE_PLAYBOOK_URL
     const val CREATE_USER_ENDPOINT = "$BASE_URL/user"
     const val SEARCH_USERS_ENDPOINT = "$BASE_URL/user"
     const val UPDATE_USER_DISPLAY_NAME_ENDPOINT = "$BASE_URL/user/name"
