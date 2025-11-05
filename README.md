@@ -2,6 +2,9 @@
 
 Frontend Android Jetpack Compose app for **The Playbook**, a service for posting and looking up creative user-generated pickup lines.
 
+The concept for this project was a shared idea between [manuel-flamminio](https://github.com/manuel-flamminio/) and me. Check out his implementation of the backend [here](https://github.com/manuel-flamminio/playbook).  
+The complete list of **API endpoints** is documented and available via [Swagger](https://manuel-flamminio.github.io/playbook-doc/).
+
 
 https://github.com/user-attachments/assets/1ebc9c13-5ab7-4154-b4b8-694944b6d156
 
